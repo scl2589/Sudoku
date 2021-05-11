@@ -69,15 +69,20 @@ public class Controller implements Initializable {
             int num = rand.nextInt(81);
             locationSet.add(num);
         }
-        List<Integer> list = new ArrayList<>(locationSet);
-        Collections.sort(list);
-        System.out.println(list);
+        List<Integer> locationList = new ArrayList<>(locationSet);
+        Collections.sort(locationList);
+        System.out.println(locationList);
 
         // 숫자가 들어갈 위치에 1~9 숫자 지정하기
-        for (int i = 0; i < list.size(); i++) {
-            Random randNum = new Random();
-            arr.get(list.get(i)).setText(Integer.toString(randNum.nextInt(9) + 1));
+        for (int i = 1; i <= 81; i++) {
+            if (locationList.contains(i)) {
+                Random randNum = new Random();
+                arr.get(i).setText(Integer.toString(randNum.nextInt(9) + 1));
+            } else {
+                continue;
+            }
+
         }
-//        myMessage.setText(Integer.toString(myrand));
+
     }
 }
