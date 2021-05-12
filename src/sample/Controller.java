@@ -82,6 +82,7 @@ public class Controller implements Initializable {
         insertRow();
         insertCol();
         insertBox();
+        insertThree();
 
     }
 
@@ -229,6 +230,85 @@ public class Controller implements Initializable {
 
             }
         }
+    }
+
+    private void insertThree() {
+        // row 설정
+        ArrayList<Integer> rowSet = getRandomNumbers(3);
+        System.out.println("rowSet" + rowSet);
+        //col 설정
+        for (Integer i : rowSet) {
+            while (true) {
+                int j = getRandomNumbers(1).get(0);
+                TextField current = arr.get(i).get(j);
+                // 만약 해당 칸이 비어있다면
+                if ("".equals(current.getText())) {
+                    // 어떤 숫자를 넣을건지 지정
+                    while (true) {
+                        int randomNumber = getRandomNumbers(1).get(0);
+                        int ij = (i / 3) * 3 + j / 3;
+                        if (!rows[i].contains(randomNumber) && !cols[j].contains(randomNumber) && !box[ij].contains(randomNumber)) {
+                            rows[i].add(randomNumber);
+                            cols[j].add(randomNumber);
+                            box[ij].add(randomNumber);
+                            current.setStyle("-fx-text-fill:green");
+                            arr.get(i).get(j).setText(Integer.toString(randomNumber));
+                            break;
+                        }
+                    }
+                    break;
+                }
+        }
+
+
+        // set 에서 제외하는 방법으로 설정하기
+//        for (Integer i : rowSet) {
+//            ArrayList<Integer> availableNumber = new ArrayList<Integer>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
+//            for (Integer a : rows[i]) {
+//                availableRow.remove(availableRow.indexOf(a));
+//            }
+
+
+//            while (true) {
+//                int randomCol = availableRow.get(getRandomNumbers(availableRow.size()).get(0));
+//                System.out.println(i + " and " + randomCol);
+//
+//                // 어떤 숫자 넣을지 정하기
+////                System.out.println(arr.get(i).get(randomCol));
+//                TextField current = arr.get(i).get(randomCol);
+//                if ("".equals(current.getText())) {
+//                    int insertNumber = getRandomNumbers(1).get(0);
+//                    int ij = (i / 3) * 3 + randomCol / 3;
+//                    if (!rows[i].contains(insertNumber) || !cols[randomCol].contains(insertNumber) || !box[ij].contains(insertNumber)) {
+//                        rows[i].add(insertNumber);
+//                        cols[randomCol].add(insertNumber);
+//                        box[ij].add(insertNumber);
+//                        current.setStyle("-fx-text-fill:green");
+//                        arr.get(i).get(randomCol).setText(Integer.toString(insertNumber));
+//                        break;
+//                    }
+//                }
+//            }
+
+
+
+        }
+
+    }
+
+    private ArrayList<Integer> getRandomNumbers(int randomQuantity) {
+        Random random = new Random();
+
+        Set <Integer> set = new HashSet<>();
+
+        while (set.size() < randomQuantity) {
+            int rowRandom = random.nextInt(8) + 1;
+            set.add(rowRandom);
+        }
+
+        ArrayList<Integer> list = new ArrayList<Integer>(set);
+
+        return list;
     }
 
 
