@@ -67,7 +67,6 @@ public class Controller implements Initializable {
      */
     private void generateRandom(){
 
-
         // sudoku board에 있는 값 초기화
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
@@ -82,7 +81,7 @@ public class Controller implements Initializable {
 
         insertRow();
         insertCol();
-
+        insertBox();
 
     }
 
@@ -96,16 +95,19 @@ public class Controller implements Initializable {
         // 어떤 column에 들어갈지 random order 정하기
         ArrayList<Integer> rowNumsColOrder = new ArrayList<Integer>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
         Collections.shuffle(rowNumsColOrder);
+        System.out.println(rowNumsColOrder);
 
         for (int i = 0; i < 9; i++) {
-            arr.get(i).get(rowNumsColOrder.get(i)).setText(Integer.toString(rowNums.get(i)));
-
+            TextField current = arr.get(i).get(rowNumsColOrder.get(i));
+            current.setText(Integer.toString(rowNums.get(i)));
+            current.setStyle("-fx-text-fill:black");
             int j = rowNumsColOrder.get(i);
             int ij = (i / 3) * 3 + j / 3;
             rows[i].add(rowNums.get(i));
             cols[rowNumsColOrder.get(i)].add(rowNums.get(i));
             box[ij].add(rowNums.get(i));
         }
+        System.out.println(rowNums);
     }
 
     private void insertCol() {
@@ -117,6 +119,7 @@ public class Controller implements Initializable {
 
             for (int j = 0; j < 9; j++) {
                 TextField current = arr.get(colNumsRowOrder.get(j)).get(j);
+
                 if (current.getText() == "") {
                     flag = true;
                     break;
@@ -124,6 +127,9 @@ public class Controller implements Initializable {
             }
             if (!flag) break;
         }
+
+        System.out.println("Row order");
+        System.out.println(colNumsRowOrder);
 
         // 각 col에 들어갈 수 있는 숫자 리스트 구하기
         ArrayList<ArrayList<Integer>> availableList = new ArrayList<ArrayList<Integer>>(9);
@@ -157,10 +163,20 @@ public class Controller implements Initializable {
             else break;
         }
 
+        //hashset에 넣기
+        for (int j = 0; j < 9; j++) {
+            rows[colNumsRowOrder.get(j)].add(colNums.get(j));
+            cols[j].add(colNums.get(j));
+            int i = colNumsRowOrder.get(j);
+            int ij = (i / 3) * 3 + j / 3;
+            box[ij].add(colNums.get(j));
+        }
+
         System.out.println(colNums);
 
         //숫자를 넣기
         for (int j = 0; j < 9; j++) {
+            int ij = (colNumsRowOrder.get(j) / 3) * 3 + j / 3;
             TextField current = arr.get(colNumsRowOrder.get(j)).get(j);
             current.setStyle("-fx-text-fill:red");
             current.setText(Integer.toString(colNums.get(j)));
@@ -168,5 +184,52 @@ public class Controller implements Initializable {
 
 
     }
+
+    private void insertBox() {
+        // 각 박스마다 들어갈 수 있는 random 숫자 정하기
+        ArrayList<Integer> insertBoxOrder = new ArrayList<Integer>(Arrays.asList( 1, 2, 3, 4, 5, 6, 7, 8, 9));
+        while (true) {
+            Collections.shuffle(insertBoxOrder);
+            boolean flag = false;
+
+            for (int ij = 0; ij < 9; ij++) {
+                if (box[ij].contains(insertBoxOrder.get(ij))) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) break;
+        }
+        System.out.println("insertBox : " + insertBoxOrder);
+
+        //각 박스에 들어갈 수 있는 위치 정하기
+        int count = -1;
+        boolean insertComplete = false;
+        for (int i = 0; i < 9; i++) {
+            insertComplete = false;
+            count++;
+            for (int j = 0; j < 9; j++) {
+                if (insertComplete == false) {
+                    int x = (j/3) + (i/3) * 3;
+                    int y = (j%3) + (i%3) * 3;
+                    TextField current = arr.get(x).get(y);
+                    if ("".equals(current.getText())) {
+                        // 해당 숫자가 관련 col, row에 존재하는지 확인하기
+                        if (rows[x].contains(insertBoxOrder.get(count)) || cols[y].contains(insertBoxOrder.get(count))) {
+                            continue;
+                        }
+                        // 해당 숫자가 존재하지 않는다면, set에 추가 및 board에 value 넣기
+                        rows[x].add(insertBoxOrder.get(count));
+                        cols[y].add(insertBoxOrder.get(count));
+                        current.setStyle("-fx-text-fill:blue");
+                        current.setText(Integer.toString(insertBoxOrder.get(count)));
+                        insertComplete = true;
+                    }
+                }
+
+            }
+        }
+    }
+
 
 }
