@@ -68,10 +68,20 @@ public class Controller implements Initializable {
 
                 if (i % 3 == 2 && j % 3 == 2) {
                     tf.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;");
+                } else if (i % 3 == 2 && j == 0) {
+                    tf.setStyle("-fx-border-width: 0 0 2 2; -fx-border-color: #364f6b;");
+                } else if (i == 0 && j ==0) {
+                    tf.setStyle("-fx-border-width: 2 0 0 2; -fx-border-color: #364f6b;");
+                } else if (i == 0 && j % 3 == 2) {
+                    tf.setStyle("-fx-border-width: 2 2 0 0; -fx-border-color: #364f6b;");
                 } else if (i % 3 == 2) {
                     tf.setStyle("-fx-border-width: 0 0 2 0; -fx-border-color: #364f6b;");
                 } else if (j % 3 == 2) {
                     tf.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b;");
+                } else if ( j == 0) {
+                    tf.setStyle("-fx-border-width: 0 0 0 2; -fx-border-color: #364f6b;");
+                } else if ( i == 0) {
+                    tf.setStyle("-fx-border-width: 2 0 0 0; -fx-border-color: #364f6b;");
                 }
 
                 row.add(tf);
@@ -434,23 +444,43 @@ public class Controller implements Initializable {
                 if (!"".equals(current.getText())) {
                     current.setEditable(false);
                     if (i % 3 == 2 && j % 3 == 2) {
-                        current.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;-fx-text-fill:gray");
+                        current.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                    } else if (i % 3 == 2 && j == 0) {
+                        current.setStyle("-fx-border-width: 0 0 2 2; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                    } else if (i == 0 && j ==0) {
+                        current.setStyle("-fx-border-width: 2 0 0 2; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                    } else if (i == 0 && j % 3 == 2) {
+                        current.setStyle("-fx-border-width: 2 2 0 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
                     } else if (i % 3 == 2) {
-                        current.setStyle("-fx-border-width: 0 0 2 0; -fx-border-color: #364f6b;-fx-text-fill:gray");
+                        current.setStyle("-fx-border-width: 0 0 2 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
                     } else if (j % 3 == 2) {
-                        current.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b;-fx-text-fill:gray");
+                        current.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                    } else if ( j == 0) {
+                        current.setStyle("-fx-border-width: 0 0 0 2; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                    } else if ( i == 0) {
+                        current.setStyle("-fx-border-width: 2 0 0 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
                     } else {
                         current.setStyle("-fx-text-fill:gray");
                     }
-
                 } else {
                     if (i % 3 == 2 && j % 3 == 2) {
                         current.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                    } else if (i == 0 && j == 0) {
+                        current.setStyle("-fx-border-width: 2 0 0 2; -fx-border-color: #364f6b;-fx-text-fill:black");
+                    } else if (i == 0 && j % 3 == 2 ) {
+                        current.setStyle("-fx-border-width: 2 2 0 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                    } else if ( i % 3 == 2 && j == 0) {
+                        current.setStyle("-fx-border-width: 0 0 2 2; -fx-border-color: #364f6b;-fx-text-fill:black");
                     } else if (i % 3 == 2) {
                         current.setStyle("-fx-border-width: 0 0 2 0; -fx-border-color: #364f6b;-fx-text-fill:black");
                     } else if (j % 3 == 2) {
                         current.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b;-fx-text-fill:black");
-                    } else {
+                    } else if ( i == 0 ) {
+                        current.setStyle("-fx-border-width: 2 0 0 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                    } else if ( j == 0 ) {
+                        current.setStyle("-fx-border-width: 0 0 0 2; -fx-border-color: #364f6b;-fx-text-fill:black");
+                    }
+                    else {
                         current.setStyle("-fx-text-fill:black");
                     }
                 }
