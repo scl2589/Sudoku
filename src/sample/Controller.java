@@ -56,6 +56,10 @@ public class Controller implements Initializable {
     HashSet<Integer> [] cols = new HashSet[9];
     HashSet<Integer> [] box = new HashSet[9];
 
+    HashSet<Integer> [] checkRows = new HashSet[9];
+    HashSet<Integer> [] checkCols = new HashSet[9];
+    HashSet<Integer> [] checkBox = new HashSet[9];
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         arr = new ArrayList<>(9);
@@ -96,8 +100,14 @@ public class Controller implements Initializable {
 
     public void handleConfirm() {
         System.out.println(count);
-        count = 0;
-        timeline.stop();
+        if (correct()) {
+            count = 0;
+            timeline.stop();
+            System.out.println("정답입니다.");
+        } else {
+            System.out.println("정답이 아닙니다.");
+        }
+
 
     }
 
@@ -440,8 +450,31 @@ public class Controller implements Initializable {
         }
     }
 
-    private void countTimer() {
+    private Boolean correct() {
+        for (int i = 0; i < 9; i++ ) {
+            checkRows[i] = new HashSet<Integer>();
+            checkCols[i] = new HashSet<Integer>();
+            checkBox[i] = new HashSet<Integer>();
+        }
 
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                String text = arr.get(i).get(j).getText();
+                if ("".equals(text)) {
+                    return false;
+                }
+                Integer current = Integer.parseInt(arr.get(i).get(j).getText());
+                int ij = (i / 3) * 3 + j / 3;
+                if (checkRows[i].contains(current) || checkCols[j].contains(current) || checkBox[ij].contains(current)) {
+                    return false;
+                } else {
+                    checkRows[i].add(current);
+                    checkCols[j].add(current);
+                    checkBox[ij].add(current);
+                }
+            }
+        }
+        return true;
     }
 
 
