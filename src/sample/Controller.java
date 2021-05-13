@@ -4,12 +4,15 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Popup;
 import javafx.util.Duration;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
@@ -41,6 +44,8 @@ public class Controller implements Initializable {
     private ArrayList<ArrayList<TextField>> arr;
     private ArrayList<Integer> removedArr;
     private ArrayList<Integer> allElements;
+    private ArrayList<ArrayList<Integer>> answer;
+    private ArrayList<ArrayList<String>> question;
 
     private int count;
     private Timeline timeline;
@@ -138,11 +143,18 @@ public class Controller implements Initializable {
             alert.setContentText("정답이 아닙니다. 다시 한 번 시도해보세요 :)");
             alert.showAndWait();
         }
+    }
 
+    public void handleAnswer() throws IOException {
+        System.out.println("ANSWER");
 
     }
 
     public void timing() {
+        // 만약 이미 generate된 sudoku 퍼즐이 있는데, 다시 한 번 generate를 눌렀을 경우, timeline을 멈춘다. 
+        if (timeline != null) {
+            timeline.stop();
+        }
         count = 0;
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
             count++;
@@ -188,6 +200,16 @@ public class Controller implements Initializable {
         if (!backtracking()) {
             System.out.println("Generate 버튼을 다시 한 번 눌러주세요.");
         } else {
+            answer = new ArrayList<>(9);
+            for (int i = 0; i < 9; i++) {
+                ArrayList<Integer> temp = new ArrayList<Integer>(9);
+                for (int j = 0; j < 9; j++) {
+                    Integer value = Integer.parseInt(arr.get(i).get(j).getText());
+                    temp.add(value);
+                }
+                answer.add(temp);
+            }
+            System.out.println(answer);
             removeElement();
         }
     }
@@ -372,6 +394,16 @@ public class Controller implements Initializable {
         }
 
         if (removedArr.size()>= 30) {
+            question = new ArrayList<>(9);
+            for (int i = 0; i < 9; i++) {
+                ArrayList<String> temp = new ArrayList<>(9);
+                for (int j = 0; j < 9; j++) {
+                    String value = arr.get(i).get(j).getText();
+                    temp.add(value);
+                }
+                question.add(temp);
+            }
+            System.out.println(question);
             setTextFieldStyle();
         } else{
             if (backtracking()) {
