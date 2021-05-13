@@ -1,25 +1,19 @@
 package sample;
 
-import com.sun.javafx.tk.Toolkit;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.control.Label;
-import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.*;
+
+import static javafx.scene.control.ButtonType.OK;
 
 /**
  * @Class Name : Controller.java
@@ -56,6 +50,10 @@ public class Controller implements Initializable {
     HashSet<Integer> [] cols = new HashSet[9];
     HashSet<Integer> [] box = new HashSet[9];
 
+    HashSet<Integer> [] checkRows = new HashSet[9];
+    HashSet<Integer> [] checkCols = new HashSet[9];
+    HashSet<Integer> [] checkBox = new HashSet[9];
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         arr = new ArrayList<>(9);
@@ -91,13 +89,46 @@ public class Controller implements Initializable {
     @FXML
     public void handleGenerate() {
         generateRandom();
-        timing();
+
     }
 
     public void handleConfirm() {
-        System.out.println(count);
-        count = 0;
-        timeline.stop();
+        // 정답일 경우
+        if (correct()) {
+            // 타이머 중지 
+            timeline.stop();
+            
+            // alert창 생성 
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Sudoku 게임 결과");
+            alert.setHeaderText("Sudoku 게임 결과입니다.");
+            alert.setContentText("정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다.");
+            
+            // 새 게임 시작하기 버튼 생성 
+            ButtonType buttonNewGame = new ButtonType("새 게임 시작하기");
+            alert.getButtonTypes().setAll(buttonNewGame, OK);
+            
+            // 사용자가 어떤 버튼을 눌렀는지 결과값 받아오기 
+            Optional<ButtonType> result = alert.showAndWait();
+            
+            if (result.get() == buttonNewGame) { // 새 게임 시작 
+                alert.hide();
+                count = 0;
+                timer_label.setText(Integer.toString(0));
+                generateRandom();
+            } else if (result.get() == OK) { // 확인버튼 
+                alert.hide();
+            }
+        // 정답이 아닐 경우
+        } else {
+            // alert 창 생성
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Sudoku 게임 결과");
+            alert.setHeaderText("Sudoku 게임 결과입니다.");
+            alert.setContentText("정답이 아닙니다. 다시 한 번 시도해보세요 :)");
+            alert.showAndWait();
+        }
+
 
     }
 
@@ -115,7 +146,7 @@ public class Controller implements Initializable {
      * Generate 버튼 이벤트 생성하기
      */
     private void generateRandom(){
-
+        timing();
         removedArr = new ArrayList<Integer>();
         allElements = new ArrayList<>();
 
@@ -137,12 +168,6 @@ public class Controller implements Initializable {
             box[i] = new HashSet<Integer>();
         }
 
-        generateSudoku();
-    }
-
-    private void generateSudoku() {
-
-
         generateTopLeftBox();
         generateFirstRow();
         generateTopMiddleBox();
@@ -155,9 +180,6 @@ public class Controller implements Initializable {
         } else {
             removeElement();
         }
-
-
-
     }
 
     private void generateTopLeftBox() {
@@ -346,9 +368,6 @@ public class Controller implements Initializable {
                 removeElement();
             }
         }
-
-
-
     }
 
     private boolean backtracking() {
@@ -440,9 +459,30 @@ public class Controller implements Initializable {
         }
     }
 
-    private void countTimer() {
+    private Boolean correct() {
+        for (int i = 0; i < 9; i++ ) {
+            checkRows[i] = new HashSet<Integer>();
+            checkCols[i] = new HashSet<Integer>();
+            checkBox[i] = new HashSet<Integer>();
+        }
 
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                String text = arr.get(i).get(j).getText();
+                if ("".equals(text)) {
+                    return false;
+                }
+                Integer current = Integer.parseInt(arr.get(i).get(j).getText());
+                int ij = (i / 3) * 3 + j / 3;
+                if (checkRows[i].contains(current) || checkCols[j].contains(current) || checkBox[ij].contains(current)) {
+                    return false;
+                } else {
+                    checkRows[i].add(current);
+                    checkCols[j].add(current);
+                    checkBox[ij].add(current);
+                }
+            }
+        }
+        return true;
     }
-
-
 }
