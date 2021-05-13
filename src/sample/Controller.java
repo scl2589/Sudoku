@@ -83,6 +83,14 @@ public class Controller implements Initializable {
         generateTopMiddleBox();
         generateTopRightBox();
         generateFirstCol();
+
+        // 만약 스도쿠가 완성되지 않는다면? 
+        if (!backtracking()) {
+            System.out.println("Generate 버튼을 다시 한 번 눌러주세요.");
+        } else {
+            System.out.println("Yes.");
+        }
+
     }
 
     private void generateTopLeftBox() {
@@ -94,7 +102,7 @@ public class Controller implements Initializable {
             arr.get(i).get(j).setText(Integer.toString(numbers.get(k)));
 
             // set에 추가한다.
-            rows[k/3].add(numbers.get(k));
+            rows[i].add(numbers.get(k));
             cols[j].add(numbers.get(k));
             box[0].add(numbers.get(k));
         }
@@ -238,5 +246,63 @@ public class Controller implements Initializable {
             list.remove(randomIndex);
         }
         return returnList;
+    }
+
+    private boolean backtracking() {
+        for (int i = 3; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+
+                // 만약 해당 위치에 숫자가 있다면 패스
+                if (!arr.get(i).get(j).getText().equals("")) continue;
+                // 비어 있는 경우라면 해당 위치에 어떤 값이 들어갈 수 있는지 확인
+                ArrayList<Integer> available = validValues(i, j);
+
+                // 각각의 value를 넣고 가능한지 확인한다.
+                for (Integer k : available) {
+                    arr.get(i).get(j).setText(Integer.toString(k));
+                    rows[i].add(k);
+                    cols[j].add(k);
+                    int ij = (i / 3) * 3 + j / 3;
+                    box[ij].add(k);
+
+                    if (backtracking()) {
+
+                        return true;
+                    }
+                    else {
+                        arr.get(i).get(j).setText("");
+                        rows[i].remove(k);
+                        cols[j].remove(k);
+                        box[ij].remove(k);
+                    }
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private ArrayList<Integer> validValues(int i, int j) {
+        // 가능한 값들 선언
+        ArrayList<Integer> available = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+        // 가로에 있는 값들을 다 제거한다.
+        for (Integer e : rows[i]) {
+            available.remove(e);
+        }
+
+        // 세로에 있는 값들을 다 제거한다.
+        for (Integer e: cols[j]) {
+            available.remove(e);
+        }
+
+        // 박스 값을 고려하며 박스 값 제거한다.
+        int ij = (i / 3) * 3 + j / 3;
+
+        for (Integer e: box[ij]) {
+            available.remove(e);
+        }
+
+        return available;
     }
 }
