@@ -1,11 +1,22 @@
 package sample;
 
+import com.sun.javafx.tk.Toolkit;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.*;
@@ -28,11 +39,17 @@ public class Controller implements Initializable {
 
     @FXML private GridPane gp_sudoku_pane;
     @FXML private Button btn_generate;
+    @FXML private Button btn_confirm;
+    @FXML private Button btn_answer;
+    @FXML private Label timer_label;
 
 
     private ArrayList<ArrayList<TextField>> arr;
     private ArrayList<Integer> removedArr;
     private ArrayList<Integer> allElements;
+
+    private int count;
+    private Timeline timeline;
 
 
     HashSet<Integer> [] rows = new HashSet[9];
@@ -59,28 +76,46 @@ public class Controller implements Initializable {
                     tf.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b;");
                 }
 
-
                 row.add(tf);
                 gp_sudoku_pane.add((TextField)row.get(row.size()-1), j, i);
-
             }
             arr.add(row);
-        }
 
+        }
+        timer_label.setStyle("-fx-font-size: 1.5em;");
 
 
 
     }
 
     @FXML
-    public void handleGenerate(){
+    public void handleGenerate() {
         generateRandom();
+        timing();
+    }
+
+    public void handleConfirm() {
+        System.out.println(count);
+        count = 0;
+        timeline.stop();
+
+    }
+
+    public void timing() {
+        count = 0;
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
+            count++;
+            timer_label.setText(Integer.toString(count));
+        }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
     }
 
     /*
      * Generate 버튼 이벤트 생성하기
      */
     private void generateRandom(){
+
         removedArr = new ArrayList<Integer>();
         allElements = new ArrayList<>();
 
@@ -404,4 +439,10 @@ public class Controller implements Initializable {
             }
         }
     }
+
+    private void countTimer() {
+
+    }
+
+
 }
