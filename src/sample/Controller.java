@@ -31,6 +31,9 @@ public class Controller implements Initializable {
 
 
     private ArrayList<ArrayList<TextField>> arr;
+    private ArrayList<Integer> removedArr;
+    private ArrayList<Integer> allElements;
+
 
     HashSet<Integer> [] rows = new HashSet[9];
     HashSet<Integer> [] cols = new HashSet[9];
@@ -45,13 +48,26 @@ public class Controller implements Initializable {
                 //arr.add(new TextField(i+":"+j));
                 TextField tf = new TextField("");
                 // textfield의 크기와 정렬 조정
-                tf.setPrefSize(50, 50);
+                tf.setPrefSize(50, 55);
                 tf.setAlignment(Pos.CENTER);
+
+                if (i % 3 == 2 && j % 3 == 2) {
+                    tf.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;");
+                } else if (i % 3 == 2) {
+                    tf.setStyle("-fx-border-width: 0 0 2 0; -fx-border-color: #364f6b;");
+                } else if (j % 3 == 2) {
+                    tf.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b;");
+                }
+
+
                 row.add(tf);
                 gp_sudoku_pane.add((TextField)row.get(row.size()-1), j, i);
+
             }
             arr.add(row);
         }
+
+
 
 
     }
@@ -65,11 +81,19 @@ public class Controller implements Initializable {
      * Generate 버튼 이벤트 생성하기
      */
     private void generateRandom(){
+        removedArr = new ArrayList<Integer>();
+        allElements = new ArrayList<>();
+
+        for (int i = 0; i < 81; i++) {
+            allElements.add(i);
+        }
 
         // sudoku board에 있는 값 초기화
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                arr.get(i).get(j).setText("");
+                TextField current = arr.get(i).get(j);
+                current.setText("");
+                current.setEditable(true);
             }
         }
         for (int i = 0; i < 9; i++ ) {
@@ -78,18 +102,26 @@ public class Controller implements Initializable {
             box[i] = new HashSet<Integer>();
         }
 
+        generateSudoku();
+    }
+
+    private void generateSudoku() {
+
+
         generateTopLeftBox();
         generateFirstRow();
         generateTopMiddleBox();
         generateTopRightBox();
         generateFirstCol();
 
-        // 만약 스도쿠가 완성되지 않는다면? 
+        // 만약 스도쿠가 완성되지 않는다면?
         if (!backtracking()) {
             System.out.println("Generate 버튼을 다시 한 번 눌러주세요.");
         } else {
-            System.out.println("Yes.");
+            removeElement();
         }
+
+
 
     }
 
@@ -107,6 +139,8 @@ public class Controller implements Initializable {
             box[0].add(numbers.get(k));
         }
     }
+
+
 
     private void generateFirstRow() {
         // 첫번째 col 생성하기
@@ -248,15 +282,48 @@ public class Controller implements Initializable {
         return returnList;
     }
 
+    private void removeElement() {
+        // 삭제할 element를 랜덤으로 구하고, removedArr 리스트에 추가한다.
+        int removeNum = getNumbers(allElements, 1).get(0);
+        removedArr.add(removeNum);
+
+        // 없앤 숫자를 allElements 에서 삭제한다.
+//        allElements.remove(allElements.indexOf(removeNum)); -> 이게 안되는 이유??
+        allElements.remove(new Integer(removeNum));
+
+        // 없애야 할 숫자를 board에서 삭제한다.
+        for (Integer e: removedArr) {
+//            System.out.println(e);
+            int i = e / 9; int j = e % 9;
+            int value = Integer.parseInt(arr.get(i).get(j).getText());
+            rows[i].remove(value);
+            cols[j].remove(value);
+            int ij = (i / 3) * 3 + j / 3;
+            box[ij].remove(value);
+            arr.get(i).get(j).setText("");
+
+        }
+
+        if (removedArr.size()>= 30) {
+            setTextFieldStyle();
+        } else{
+            if (backtracking()) {
+                removeElement();
+            }
+        }
+
+
+
+    }
+
     private boolean backtracking() {
-        for (int i = 3; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
 
                 // 만약 해당 위치에 숫자가 있다면 패스
                 if (!arr.get(i).get(j).getText().equals("")) continue;
                 // 비어 있는 경우라면 해당 위치에 어떤 값이 들어갈 수 있는지 확인
                 ArrayList<Integer> available = validValues(i, j);
-
                 // 각각의 value를 넣고 가능한지 확인한다.
                 for (Integer k : available) {
                     arr.get(i).get(j).setText(Integer.toString(k));
@@ -304,5 +371,37 @@ public class Controller implements Initializable {
         }
 
         return available;
+    }
+
+    private void setTextFieldStyle() {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                TextField current = arr.get(i).get(j);
+                if (!"".equals(current.getText())) {
+                    current.setEditable(false);
+                    if (i % 3 == 2 && j % 3 == 2) {
+                        current.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;-fx-text-fill:gray");
+                    } else if (i % 3 == 2) {
+                        current.setStyle("-fx-border-width: 0 0 2 0; -fx-border-color: #364f6b;-fx-text-fill:gray");
+                    } else if (j % 3 == 2) {
+                        current.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b;-fx-text-fill:gray");
+                    } else {
+                        current.setStyle("-fx-text-fill:gray");
+                    }
+
+                } else {
+                    if (i % 3 == 2 && j % 3 == 2) {
+                        current.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                    } else if (i % 3 == 2) {
+                        current.setStyle("-fx-border-width: 0 0 2 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                    } else if (j % 3 == 2) {
+                        current.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                    } else {
+                        current.setStyle("-fx-text-fill:black");
+                    }
+                }
+
+            }
+        }
     }
 }
