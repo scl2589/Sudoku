@@ -7,7 +7,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.*;
 
@@ -79,237 +78,231 @@ public class Controller implements Initializable {
             box[i] = new HashSet<Integer>();
         }
 
-        insertRow();
-        insertCol();
-        insertBox();
-        insertThree();
+        generateTopLeftBox();
+        generateFirstRow();
+        generateTopMiddleBox();
+        generateTopRightBox();
+        generateFirstCol();
 
-    }
-
-    private void insertRow() {
-        // 각 row에 들어갈 숫자 정하기
-        ArrayList<Integer> rowNums = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-
-        // shuffle 진행
-        Collections.shuffle(rowNums);
-
-        // 어떤 column에 들어갈지 random order 정하기
-        ArrayList<Integer> rowNumsColOrder = new ArrayList<Integer>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
-        Collections.shuffle(rowNumsColOrder);
-        System.out.println(rowNumsColOrder);
-
-        for (int i = 0; i < 9; i++) {
-            TextField current = arr.get(i).get(rowNumsColOrder.get(i));
-            current.setText(Integer.toString(rowNums.get(i)));
-            current.setStyle("-fx-text-fill:black");
-            int j = rowNumsColOrder.get(i);
-            int ij = (i / 3) * 3 + j / 3;
-            rows[i].add(rowNums.get(i));
-            cols[rowNumsColOrder.get(i)].add(rowNums.get(i));
-            box[ij].add(rowNums.get(i));
+        // 만약 스도쿠가 완성되지 않는다면? 
+        if (!backtracking()) {
+            System.out.println("Generate 버튼을 다시 한 번 눌러주세요.");
+        } else {
+            System.out.println("Yes.");
         }
-        System.out.println(rowNums);
+
     }
 
-    private void insertCol() {
-        // 숫자가 차있지 않은 칸을 고려해 row 순서 정하기
-        ArrayList<Integer> colNumsRowOrder = new ArrayList<Integer>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
-        while (true) {
-            Collections.shuffle(colNumsRowOrder);
-            boolean flag = false;
+    private void generateTopLeftBox() {
+        // 좌상단 박스 생성하기
+        ArrayList<Integer> numbers = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        Collections.shuffle(numbers);
+        for (int k = 0; k < 9; k++) {
+            int i = k / 3, j = k % 3;
+            arr.get(i).get(j).setText(Integer.toString(numbers.get(k)));
 
+            // set에 추가한다.
+            rows[i].add(numbers.get(k));
+            cols[j].add(numbers.get(k));
+            box[0].add(numbers.get(k));
+        }
+    }
+
+    private void generateFirstRow() {
+        // 첫번째 col 생성하기
+        ArrayList<Integer> firstRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        for (Integer e : rows[0]) {
+            firstRowAvailable.remove(e);
+        }
+        Collections.shuffle(firstRowAvailable);
+
+        for (int j = 3; j < 9; j++) {
+            // text 추가한다.
+            arr.get(0).get(j).setText(Integer.toString(firstRowAvailable.get(j - 3)));
+            // HashSet에 저장해준다.
+            rows[0].add(firstRowAvailable.get(j-3));
+            cols[j].add(firstRowAvailable.get(j-3));
+            int ij = j / 3;
+            box[ij].add(firstRowAvailable.get(j-3));
+        }
+
+
+
+    }
+    private void generateTopMiddleBox() {
+        // 중앙 상단 박스 생성하기
+        // 가능한 숫자 나열
+        ArrayList<Integer> middleSecondRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+        // 중앙 박스에 이미 있는 요소들 제거
+        for (Integer e : box[1]) {
+            middleSecondRowAvailable.remove(e);
+        }
+        // 2번째 row에 있는 요소들 제거
+        for (Integer e : rows[1]) {
+            middleSecondRowAvailable.remove(e);
+        }
+
+        // 2번째 row에 필수적으로 있어야 하는 값 확인
+        ArrayList<Integer> mustBeInMiddleSecondRow = new ArrayList<Integer>();
+        // 3번째 row에 숫자가 있어서 2번째 row에 필수적으로 들어가야 하는 값 추가
+        for (Integer e: rows[2]) {
+            if (middleSecondRowAvailable.contains(e)) {
+                mustBeInMiddleSecondRow.add(e);
+                middleSecondRowAvailable.remove(middleSecondRowAvailable.indexOf(e));
+            }
+        }
+
+        List<Integer> middleSecondRowValues = getNumbers(middleSecondRowAvailable, 3 - mustBeInMiddleSecondRow.size());
+        middleSecondRowValues.addAll(mustBeInMiddleSecondRow);
+        Collections.shuffle(middleSecondRowValues);
+
+        for (int j = 3; j < 6; j++) {
+            arr.get(1).get(j).setText(Integer.toString(middleSecondRowValues.get(j - 3)));
+            // HashSet에 저장해준다.
+            rows[1].add(middleSecondRowValues.get(j-3));
+            cols[j].add(middleSecondRowValues.get(j-3));
+            box[1].add(middleSecondRowValues.get(j-3));
+        }
+
+        // 마지막 세번째 줄 추가하기
+        ArrayList<Integer> middleThirdRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        // 중앙 박스에 이미 있는 요소들 제거
+        for (Integer e : box[1]) {
+            middleThirdRowAvailable.remove(e);
+        }
+        Collections.shuffle(middleSecondRowValues);
+
+        // Text 추가하기
+        for (int j = 3; j < 6; j++) {
+            // text 추가한다.
+            arr.get(2).get(j).setText(Integer.toString(middleThirdRowAvailable.get(j - 3)));
+            // HashSet에 저장해준다.
+            rows[2].add(middleThirdRowAvailable.get(j-3));
+            cols[j].add(middleThirdRowAvailable.get(j-3));
+            box[1].add(middleThirdRowAvailable.get(j-3));
+        }
+    }
+
+    private void generateTopRightBox() {
+        ArrayList<Integer> rightSecondRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> rightThirdRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+        // 2번째 row에 있는 요소들 제거
+        for (Integer e : rows[1]) {
+            rightSecondRowAvailable.remove(e);
+        }
+        // 3번째 row에 있는 요소들 제거
+        for (Integer e : rows[2]) {
+            rightThirdRowAvailable.remove(e);
+        }
+
+        Collections.shuffle(rightSecondRowAvailable);
+        Collections.shuffle(rightThirdRowAvailable);
+
+        // Text 추가하기
+        for (int j = 6; j < 9; j++) {
+            // text 추가한다.
+            arr.get(1).get(j).setText(Integer.toString(rightSecondRowAvailable.get(j - 6)));
+            arr.get(2).get(j).setText(Integer.toString(rightThirdRowAvailable.get(j - 6)));
+            // HashSet에 저장해준다.
+            rows[1].add(rightSecondRowAvailable.get(j-6));
+            rows[2].add(rightThirdRowAvailable.get(j-6));
+
+            cols[j].add(rightSecondRowAvailable.get(j-6));
+            cols[j].add(rightThirdRowAvailable.get(j-6));
+
+            box[2].add(rightSecondRowAvailable.get(j-6));
+            box[2].add(rightThirdRowAvailable.get(j-6));
+        }
+    }
+
+    private void generateFirstCol() {
+        ArrayList<Integer> firstColAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+        // 2번째 row에 있는 요소들 제거
+        for (Integer e : cols[0]) {
+            firstColAvailable.remove(e);
+        }
+
+        Collections.shuffle(firstColAvailable);
+
+        for (int i = 3; i < 9; i++) {
+            arr.get(i).get(0).setText(Integer.toString(firstColAvailable.get(i-3)));
+
+            rows[i].add(firstColAvailable.get(i-3));
+            cols[0].add(firstColAvailable.get(i-3));
+            int ij = (i / 3) * 3 ;
+            box[ij].add(firstColAvailable.get(i-3));
+        }
+    }
+
+    private List<Integer> getNumbers(ArrayList<Integer> list, int totalItems ) {
+        Random rand = new Random();
+        List<Integer> returnList = new ArrayList<>();
+        for (int i = 0; i < totalItems; i++) {
+            int randomIndex = rand.nextInt(list.size());
+            returnList.add(list.get(randomIndex));
+            list.remove(randomIndex);
+        }
+        return returnList;
+    }
+
+    private boolean backtracking() {
+        for (int i = 3; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                TextField current = arr.get(colNumsRowOrder.get(j)).get(j);
 
-                if (current.getText() == "") {
-                    flag = true;
-                    break;
-                }
-            }
-            if (!flag) break;
-        }
+                // 만약 해당 위치에 숫자가 있다면 패스
+                if (!arr.get(i).get(j).getText().equals("")) continue;
+                // 비어 있는 경우라면 해당 위치에 어떤 값이 들어갈 수 있는지 확인
+                ArrayList<Integer> available = validValues(i, j);
 
-        System.out.println("Row order");
-        System.out.println(colNumsRowOrder);
+                // 각각의 value를 넣고 가능한지 확인한다.
+                for (Integer k : available) {
+                    arr.get(i).get(j).setText(Integer.toString(k));
+                    rows[i].add(k);
+                    cols[j].add(k);
+                    int ij = (i / 3) * 3 + j / 3;
+                    box[ij].add(k);
 
-        // 각 col에 들어갈 수 있는 숫자 리스트 구하기
-        ArrayList<ArrayList<Integer>> availableList = new ArrayList<ArrayList<Integer>>(9);
-        for (int j = 0; j < 9; j++){
-            ArrayList<Integer> available = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-            for (Integer row : rows[colNumsRowOrder.get(j)]) {
-                available.remove(row);
-            }
-            for (Integer col: cols[j]) {
-                available.remove(col);
-            }
-            int ij = (colNumsRowOrder.get(j) / 3) * 3 + j / 3;
-            for (Integer b: box[ij]) {
-                available.remove(b);
-            }
-            availableList.add(available);
-        }
+                    if (backtracking()) {
 
-        // 위에서 구한 availableList를 기반으로 col에 들어갈 값들 구하기
-        ArrayList<Integer> colNums = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-        while (true) {
-            Collections.shuffle(colNums);
-            boolean flag = false;
-            for (int i = 0; i < 9; i++) {
-                if (!availableList.get(i).contains(colNums.get(i))) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (flag) continue;
-            else break;
-        }
-
-        //hashset에 넣기
-        for (int j = 0; j < 9; j++) {
-            rows[colNumsRowOrder.get(j)].add(colNums.get(j));
-            cols[j].add(colNums.get(j));
-            int i = colNumsRowOrder.get(j);
-            int ij = (i / 3) * 3 + j / 3;
-            box[ij].add(colNums.get(j));
-        }
-
-        System.out.println(colNums);
-
-        //숫자를 넣기
-        for (int j = 0; j < 9; j++) {
-            int ij = (colNumsRowOrder.get(j) / 3) * 3 + j / 3;
-            TextField current = arr.get(colNumsRowOrder.get(j)).get(j);
-            current.setStyle("-fx-text-fill:red");
-            current.setText(Integer.toString(colNums.get(j)));
-        }
-
-
-    }
-
-    private void insertBox() {
-        // 각 박스마다 들어갈 수 있는 random 숫자 정하기
-        ArrayList<Integer> insertBoxOrder = new ArrayList<Integer>(Arrays.asList( 1, 2, 3, 4, 5, 6, 7, 8, 9));
-        while (true) {
-            Collections.shuffle(insertBoxOrder);
-            boolean flag = false;
-
-            for (int ij = 0; ij < 9; ij++) {
-                if (box[ij].contains(insertBoxOrder.get(ij))) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (!flag) break;
-        }
-        System.out.println("insertBox : " + insertBoxOrder);
-
-        //각 박스에 들어갈 수 있는 위치 정하기
-        int count = -1;
-        boolean insertComplete = false;
-        for (int i = 0; i < 9; i++) {
-            insertComplete = false;
-            count++;
-            for (int j = 0; j < 9; j++) {
-                if (insertComplete == false) {
-                    int x = (j/3) + (i/3) * 3;
-                    int y = (j%3) + (i%3) * 3;
-                    TextField current = arr.get(x).get(y);
-                    if ("".equals(current.getText())) {
-                        // 해당 숫자가 관련 col, row에 존재하는지 확인하기
-                        if (rows[x].contains(insertBoxOrder.get(count)) || cols[y].contains(insertBoxOrder.get(count))) {
-                            continue;
-                        }
-                        // 해당 숫자가 존재하지 않는다면, set에 추가 및 board에 value 넣기
-                        rows[x].add(insertBoxOrder.get(count));
-                        cols[y].add(insertBoxOrder.get(count));
-                        current.setStyle("-fx-text-fill:blue");
-                        current.setText(Integer.toString(insertBoxOrder.get(count)));
-                        insertComplete = true;
+                        return true;
+                    }
+                    else {
+                        arr.get(i).get(j).setText("");
+                        rows[i].remove(k);
+                        cols[j].remove(k);
+                        box[ij].remove(k);
                     }
                 }
-
+                return false;
             }
         }
+        return true;
     }
 
-    private void insertThree() {
-        // row 설정
-        ArrayList<Integer> rowSet = getRandomNumbers(3);
-        System.out.println("rowSet" + rowSet);
-        //col 설정
-        for (Integer i : rowSet) {
-            while (true) {
-                int j = getRandomNumbers(1).get(0);
-                TextField current = arr.get(i).get(j);
-                // 만약 해당 칸이 비어있다면
-                if ("".equals(current.getText())) {
-                    // 어떤 숫자를 넣을건지 지정
-                    while (true) {
-                        int randomNumber = getRandomNumbers(1).get(0);
-                        int ij = (i / 3) * 3 + j / 3;
-                        if (!rows[i].contains(randomNumber) && !cols[j].contains(randomNumber) && !box[ij].contains(randomNumber)) {
-                            rows[i].add(randomNumber);
-                            cols[j].add(randomNumber);
-                            box[ij].add(randomNumber);
-                            current.setStyle("-fx-text-fill:green");
-                            arr.get(i).get(j).setText(Integer.toString(randomNumber));
-                            break;
-                        }
-                    }
-                    break;
-                }
+    private ArrayList<Integer> validValues(int i, int j) {
+        // 가능한 값들 선언
+        ArrayList<Integer> available = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+
+        // 가로에 있는 값들을 다 제거한다.
+        for (Integer e : rows[i]) {
+            available.remove(e);
         }
 
-
-        // set 에서 제외하는 방법으로 설정하기
-//        for (Integer i : rowSet) {
-//            ArrayList<Integer> availableNumber = new ArrayList<Integer>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
-//            for (Integer a : rows[i]) {
-//                availableRow.remove(availableRow.indexOf(a));
-//            }
-
-
-//            while (true) {
-//                int randomCol = availableRow.get(getRandomNumbers(availableRow.size()).get(0));
-//                System.out.println(i + " and " + randomCol);
-//
-//                // 어떤 숫자 넣을지 정하기
-////                System.out.println(arr.get(i).get(randomCol));
-//                TextField current = arr.get(i).get(randomCol);
-//                if ("".equals(current.getText())) {
-//                    int insertNumber = getRandomNumbers(1).get(0);
-//                    int ij = (i / 3) * 3 + randomCol / 3;
-//                    if (!rows[i].contains(insertNumber) || !cols[randomCol].contains(insertNumber) || !box[ij].contains(insertNumber)) {
-//                        rows[i].add(insertNumber);
-//                        cols[randomCol].add(insertNumber);
-//                        box[ij].add(insertNumber);
-//                        current.setStyle("-fx-text-fill:green");
-//                        arr.get(i).get(randomCol).setText(Integer.toString(insertNumber));
-//                        break;
-//                    }
-//                }
-//            }
-
-
-
+        // 세로에 있는 값들을 다 제거한다.
+        for (Integer e: cols[j]) {
+            available.remove(e);
         }
 
+        // 박스 값을 고려하며 박스 값 제거한다.
+        int ij = (i / 3) * 3 + j / 3;
+
+        for (Integer e: box[ij]) {
+            available.remove(e);
+        }
+
+        return available;
     }
-
-    private ArrayList<Integer> getRandomNumbers(int randomQuantity) {
-        Random random = new Random();
-
-        Set <Integer> set = new HashSet<>();
-
-        while (set.size() < randomQuantity) {
-            int rowRandom = random.nextInt(8) + 1;
-            set.add(rowRandom);
-        }
-
-        ArrayList<Integer> list = new ArrayList<Integer>(set);
-
-        return list;
-    }
-
-
 }
