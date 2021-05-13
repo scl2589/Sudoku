@@ -4,12 +4,10 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Popup;
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -108,45 +106,73 @@ public class Controller implements Initializable {
     }
 
     public void handleConfirm() {
-        // 정답일 경우
-        if (correct()) {
-            // 타이머 중지 
-            timeline.stop();
-            
-            // alert창 생성 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Sudoku 게임 결과");
-            alert.setHeaderText("Sudoku 게임 결과입니다.");
-            alert.setContentText("정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다.");
-            
-            // 새 게임 시작하기 버튼 생성 
-            ButtonType buttonNewGame = new ButtonType("새 게임 시작하기");
-            alert.getButtonTypes().setAll(buttonNewGame, OK);
-            
-            // 사용자가 어떤 버튼을 눌렀는지 결과값 받아오기 
-            Optional<ButtonType> result = alert.showAndWait();
-            
-            if (result.get() == buttonNewGame) { // 새 게임 시작 
-                alert.hide();
-                count = 0;
-                timer_label.setText(Integer.toString(0));
-                generateRandom();
-            } else if (result.get() == OK) { // 확인버튼 
-                alert.hide();
-            }
-        // 정답이 아닐 경우
-        } else {
-            // alert 창 생성
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Sudoku 게임 결과");
-            alert.setHeaderText("Sudoku 게임 결과입니다.");
-            alert.setContentText("정답이 아닙니다. 다시 한 번 시도해보세요 :)");
+        // 아직 게임이 생성되지 않았을 경우 
+        if (answer == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("Sudoku 게임 미시작");
+            alert.setContentText("Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 게임 결과를 확인하기 위해 눌러주세요.");
             alert.showAndWait();
+        } else { // 게임이 생성된 경우
+            // 정답일 경우
+            if (correct()) {
+                // 타이머 중지 
+                timeline.stop();
+
+                // alert창 생성 
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Sudoku 게임 결과");
+                alert.setHeaderText("Sudoku 게임 결과입니다.");
+                alert.setContentText("정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다.");
+
+                // 새 게임 시작하기 버튼 생성 
+                ButtonType buttonNewGame = new ButtonType("새 게임 시작하기");
+                alert.getButtonTypes().setAll(buttonNewGame, OK);
+
+                // 사용자가 어떤 버튼을 눌렀는지 결과값 받아오기 
+                Optional<ButtonType> result = alert.showAndWait();
+
+                if (result.get() == buttonNewGame) { // 새 게임 시작 
+                    alert.hide();
+                    count = 0;
+                    timer_label.setText(Integer.toString(0));
+                    generateRandom();
+                } else if (result.get() == OK) { // 확인버튼 
+                    alert.hide();
+                }
+                // 정답이 아닐 경우
+            } else {
+                // alert 창 생성
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Sudoku 게임 결과");
+                alert.setHeaderText("Sudoku 게임 결과입니다.");
+                alert.setContentText("정답이 아닙니다. 다시 한 번 시도해보세요 :)");
+                alert.showAndWait();
+            }
         }
+        
+
     }
 
     public void handleAnswer() throws IOException {
-        System.out.println("ANSWER");
+        if (answer == null ) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("Sudoku 게임 미시작");
+            alert.setContentText("Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 정답을 확인하기 위해 눌러주세요.");
+            alert.showAndWait();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Sudoku 게임 정답");
+            alert.setHeaderText("Sudoku 게임 정답입니다.");
+            String sudokuAnswer = "";
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    sudokuAnswer += answer.get(i).get(j) + " ";
+                }
+                sudokuAnswer += "\n";
+            }
+            alert.setContentText(sudokuAnswer);
+            alert.showAndWait();
+        }
 
     }
 
@@ -198,7 +224,10 @@ public class Controller implements Initializable {
 
         // 만약 스도쿠가 완성되지 않는다면?
         if (!backtracking()) {
-            System.out.println("Generate 버튼을 다시 한 번 눌러주세요.");
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("Sudoku 게임 생성 오류");
+            alert.setContentText("게임 생성에 오류가 발생했습니다. \nGenerate 버튼을 다시 한 번 눌러주세요.");
+            alert.showAndWait();
         } else {
             answer = new ArrayList<>(9);
             for (int i = 0; i < 9; i++) {
@@ -209,7 +238,6 @@ public class Controller implements Initializable {
                 }
                 answer.add(temp);
             }
-            System.out.println(answer);
             removeElement();
         }
     }
@@ -382,7 +410,6 @@ public class Controller implements Initializable {
 
         // 없애야 할 숫자를 board에서 삭제한다.
         for (Integer e: removedArr) {
-//            System.out.println(e);
             int i = e / 9; int j = e % 9;
             int value = Integer.parseInt(arr.get(i).get(j).getText());
             rows[i].remove(value);
@@ -403,7 +430,6 @@ public class Controller implements Initializable {
                 }
                 question.add(temp);
             }
-            System.out.println(question);
             setTextFieldStyle();
         } else{
             if (backtracking()) {
