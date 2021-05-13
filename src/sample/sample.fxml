@@ -23,7 +23,7 @@
                   </Label>
                   <Button fx:id="btn_generate" mnemonicParsing="false" onAction="#handleGenerate" style="-fx-background-color: #f38181;" text="Generate" />
                   <Button fx:id="btn_confirm" mnemonicParsing="false" onAction="#handleConfirm" style="-fx-background-color: #fce38a;" text="Confirmation" />
-                  <Button fx:id="btn_answer" mnemonicParsing="false" style="-fx-background-color: #95e1d3;" text="Answer" />
+                  <Button fx:id="btn_answer" mnemonicParsing="false" onAction="#handleAnswer" style="-fx-background-color: #95e1d3;" text="Answer" />
                </children>
             </HBox>
             <GridPane fx:id="gp_sudoku_pane" alignment="CENTER" prefHeight="500.0" prefWidth="500.0">
