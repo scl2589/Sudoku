@@ -52,12 +52,13 @@ public class Controller implements Initializable {
         for (int i = 0; i < 9; i++) {
             ArrayList row = new ArrayList<TextField>();
             for (int j = 0; j < 9; j++) {
-                //arr.add(new TextField(i+":"+j));
                 TextField tf = new TextField("");
+
                 // textfield의 크기와 정렬 조정
                 tf.setPrefSize(50, 55);
                 tf.setAlignment(Pos.CENTER);
 
+                // sudoku 처럼 보이기 위해 각 row/col 값을 계산해 outline 생성
                 if (i % 3 == 2 && j % 3 == 2) {
                     tf.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;");
                 } else if (i % 3 == 2 && j == 0) {
@@ -97,9 +98,7 @@ public class Controller implements Initializable {
     public void handleConfirm() {
         // 아직 게임이 생성되지 않았을 경우 
         if (answer == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Sudoku 게임 미시작");
-            alert.setContentText("Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 게임 결과를 확인하기 위해 눌러주세요.");
+            Alert alert = createAlert("warning", null, "Sudoku 게임 미시작", "Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 게임 결과를 확인하기 위해 눌러주세요.");
             alert.showAndWait();
         } else { // 게임이 생성된 경우
             // 정답일 경우
@@ -107,11 +106,8 @@ public class Controller implements Initializable {
                 // 타이머 중지 
                 timeline.stop();
 
-                // alert창 생성 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Sudoku 게임 결과");
-                alert.setHeaderText("Sudoku 게임 결과입니다.");
-                alert.setContentText("정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다.");
+                // alert창 생성
+                Alert alert = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.", "정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다." );
 
                 // 새 게임 시작하기 버튼 생성 
                 ButtonType buttonNewGame = new ButtonType("새 게임 시작하기");
@@ -120,7 +116,7 @@ public class Controller implements Initializable {
                 // 사용자가 어떤 버튼을 눌렀는지 결과값 받아오기 
                 Optional<ButtonType> result = alert.showAndWait();
 
-                if (result.get() == buttonNewGame) { // 새 게임 시작 
+                if (result.get() == buttonNewGame) { // 새 게임 시작
                     alert.hide();
                     count = 0;
                     timer_label.setText(Integer.toString(0));
@@ -128,13 +124,10 @@ public class Controller implements Initializable {
                 } else if (result.get() == OK) { // 확인버튼 
                     alert.hide();
                 }
-                // 정답이 아닐 경우
-            } else {
+
+            } else { // 정답이 아닐 경우
                 // alert 창 생성
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Sudoku 게임 결과");
-                alert.setHeaderText("Sudoku 게임 결과입니다.");
-                alert.setContentText("정답이 아닙니다. 다시 한 번 시도해보세요 :)");
+                Alert alert  = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.","정답이 아닙니다. 다시 한 번 시도해보세요 :)"  );
                 alert.showAndWait();
             }
         }
@@ -144,14 +137,10 @@ public class Controller implements Initializable {
 
     public void handleAnswer() throws IOException {
         if (answer == null ) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Sudoku 게임 미시작");
-            alert.setContentText("Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 정답을 확인하기 위해 눌러주세요.");
+            Alert alert = createAlert("warning", null, "Sudoku 게임 미시작", "Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 정답을 확인하기 위해 눌러주세요." );
             alert.showAndWait();
         } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Sudoku 게임 정답");
-            alert.setHeaderText("Sudoku 게임 정답입니다.");
+            Alert alert = createAlert("information", "Sudoku 게임 정답", "Sudoku 게임 정답입니다.", null);
             String sudokuAnswer = "";
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 9; j++) {
@@ -215,9 +204,7 @@ public class Controller implements Initializable {
         // 백트래킹으로 스도쿠 완성
         // 만약 스도쿠가 완성되지 않는다면?
         if (!backtracking()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Sudoku 게임 생성 오류");
-            alert.setContentText("게임 생성에 오류가 발생했습니다. \nGenerate 버튼을 다시 한 번 눌러주세요.");
+            Alert alert = createAlert("warning", null, "Sudoku 게임 생성 오류", "게임 생성에 오류가 발생했습니다. \nGenerate 버튼을 다시 한 번 눌러주세요.");
             alert.showAndWait();
         } else {
             answer = new ArrayList<>(9);
@@ -432,7 +419,6 @@ public class Controller implements Initializable {
     private boolean backtracking() {
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-
                 // 만약 해당 위치에 숫자가 있다면 패스
                 if (!arr.get(i).get(j).getText().equals("")) continue;
                 // 비어 있는 경우라면 해당 위치에 어떤 값이 들어갈 수 있는지 확인
@@ -446,7 +432,6 @@ public class Controller implements Initializable {
                     box[ij].add(k);
 
                     if (backtracking()) {
-
                         return true;
                     }
                     else {
@@ -498,8 +483,7 @@ public class Controller implements Initializable {
                         String s = event.getText();
 
                         // alert 창 생성
-                        Alert alert = new Alert(Alert.AlertType.WARNING);
-                        alert.setHeaderText("문자 기입 오류");
+                        Alert alert = createAlert("warning", null, "문자 기입 오류", null);
                         // Backspace 키를 제외한 후, key 분석
                         if (key != KeyCode.BACK_SPACE) {
                             // char을 통해 알파벳인지/특수문자인지 확인하기 위해
@@ -587,5 +571,25 @@ public class Controller implements Initializable {
             }
         }
         return true;
+    }
+
+    private Alert createAlert(String type, String title, String header, String content) {
+        Alert alert;
+        if (type == "warning") {
+            alert = new Alert(Alert.AlertType.WARNING);
+        } else {
+            alert = new Alert(Alert.AlertType.INFORMATION);
+        }
+        if (title != null) {
+            alert.setTitle(title);
+        }
+        if (header != null) {
+            alert.setHeaderText(header);
+        }
+        if (content != null) {
+            alert.setContentText(content);
+        }
+
+        return alert;
     }
 }
