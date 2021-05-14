@@ -112,8 +112,10 @@ public class Controller implements Initializable {
 
                 if (result.get() == buttonNewGame) { // 새 게임 시작
                     alert.hide();
+                    // 시간을 0으로 초기화
                     count = 0;
                     timer_label.setText(Integer.toString(0));
+                    // 새 게임을 생성한다
                     generateRandom();
                 } else if (result.get() == OK) { // 확인버튼 
                     alert.hide();
@@ -165,7 +167,10 @@ public class Controller implements Initializable {
      * Generate 버튼 이벤트 생성하기
      */
     private void generateRandom(){
+        // 문제를 생성했으므로 시간을 측정하기 시작한다.
         timing();
+
+        // 초기화한다.
         removedArr = new ArrayList<>();
         allElements = new ArrayList<>();
 
@@ -173,7 +178,7 @@ public class Controller implements Initializable {
             allElements.add(i);
         }
 
-        // sudoku board에 있는 값 초기화
+        // sudoku board에 있는 값 초기화 (generate 버튼을 여러 번 눌렀을 때에 sudoku board를 비워야 한다.)
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
                 TextField current = arr.get(i).get(j);
@@ -199,7 +204,8 @@ public class Controller implements Initializable {
         if (!backtracking()) {
             Alert alert = createAlert("warning", null, "Sudoku 게임 생성 오류", "게임 생성에 오류가 발생했습니다. \nGenerate 버튼을 다시 한 번 눌러주세요.");
             alert.showAndWait();
-        } else {
+        } else { // 스도쿠가 완성될 경우?
+            // Answer 버튼을 위해 정답 배열을 만들어서 담아둔다.
             answer = new ArrayList<>(9);
             for (int i = 0; i < 9; i++) {
                 ArrayList<Integer> temp = new ArrayList<>(9);
@@ -209,6 +215,7 @@ public class Controller implements Initializable {
                 }
                 answer.add(temp);
             }
+            // 스도쿠 문제를 생성하기 위해 element를 하나씩 지운다.
             removeElement();
         }
     }
@@ -247,10 +254,8 @@ public class Controller implements Initializable {
             int ij = j / 3;
             box[ij].add(firstRowAvailable.get(j-3));
         }
-
-
-
     }
+
     private void generateTopMiddleBox() {
         // 중앙 상단 박스 생성하기
         // 가능한 숫자 나열
@@ -342,7 +347,7 @@ public class Controller implements Initializable {
     private void generateFirstCol() {
         ArrayList<Integer> firstColAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
 
-        // 2번째 row에 있는 요소들 제거
+        // 첫번째 column에 있는 요소들 제거
         for (Integer e : cols[0]) {
             firstColAvailable.remove(e);
         }
@@ -464,6 +469,33 @@ public class Controller implements Initializable {
         return available;
     }
 
+    private Boolean correct() {
+        for (int i = 0; i < 9; i++ ) {
+            checkRows[i] = new HashSet<>();
+            checkCols[i] = new HashSet<>();
+            checkBox[i] = new HashSet<>();
+        }
+
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                String text = arr.get(i).get(j).getText();
+                if ("".equals(text)) {
+                    return false;
+                }
+                Integer current = Integer.parseInt(arr.get(i).get(j).getText());
+                int ij = (i / 3) * 3 + j / 3;
+                if (checkRows[i].contains(current) || checkCols[j].contains(current) || checkBox[ij].contains(current)) {
+                    return false;
+                } else {
+                    checkRows[i].add(current);
+                    checkCols[j].add(current);
+                    checkBox[ij].add(current);
+                }
+            }
+        }
+        return true;
+    }
+
     private void setTextFieldStyle() {
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
@@ -536,32 +568,7 @@ public class Controller implements Initializable {
         }
     }
 
-    private Boolean correct() {
-        for (int i = 0; i < 9; i++ ) {
-            checkRows[i] = new HashSet<>();
-            checkCols[i] = new HashSet<>();
-            checkBox[i] = new HashSet<>();
-        }
 
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                String text = arr.get(i).get(j).getText();
-                if ("".equals(text)) {
-                    return false;
-                }
-                Integer current = Integer.parseInt(arr.get(i).get(j).getText());
-                int ij = (i / 3) * 3 + j / 3;
-                if (checkRows[i].contains(current) || checkCols[j].contains(current) || checkBox[ij].contains(current)) {
-                    return false;
-                } else {
-                    checkRows[i].add(current);
-                    checkCols[j].add(current);
-                    checkBox[ij].add(current);
-                }
-            }
-        }
-        return true;
-    }
 
     private Alert createAlert(String type, String title, String header, String content) {
         Alert alert;
