@@ -3,10 +3,13 @@ package sample;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 
@@ -16,20 +19,6 @@ import java.util.*;
 
 import static javafx.scene.control.ButtonType.OK;
 
-/**
- * @Class Name : Controller.java
- * @Description : Controller Class
- * @Modification Information
- * @
- * @   수정일      수정자               수정내용
- * @ ----------   ---------   -------------------------------
- * @ 2021.05.11   신채린                최초생성
- *
- * @author S/W 개발팀
- * @since 2021.05.11
- * @version 1.0
- * @see
- */
 public class Controller implements Initializable {
 
     @FXML private GridPane gp_sudoku_pane;
@@ -216,12 +205,14 @@ public class Controller implements Initializable {
             box[i] = new HashSet<Integer>();
         }
 
+        // 스도쿠 완성하기 (top 3 rows and 1st column)
         generateTopLeftBox();
         generateFirstRow();
         generateTopMiddleBox();
         generateTopRightBox();
         generateFirstCol();
 
+        // 백트래킹으로 스도쿠 완성
         // 만약 스도쿠가 완성되지 않는다면?
         if (!backtracking()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -499,6 +490,30 @@ public class Controller implements Initializable {
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
                 TextField current = arr.get(i).get(j);
+                // 각 textfield마다 키보드 이벤트 추가
+                current.setOnKeyPressed(new EventHandler<KeyEvent>() {
+                    @Override
+                    public void handle(KeyEvent event) {
+                        KeyCode key = event.getCode();
+                        String s = event.getText();
+
+                        // alert 창 생성
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setHeaderText("문자 기입 오류");
+                        // Backspace 키를 제외한 후, key 분석
+                        if (key != KeyCode.BACK_SPACE) {
+                            // char을 통해 알파벳인지/특수문자인지 확인하기 위해
+                            char ch = s.charAt(0);
+                            if (key == KeyCode.DIGIT0 || key == KeyCode.NUMPAD0) {// 숫자 0을 기입하였을 경우
+                                alert.setContentText("숫자 0은 기입이 불가합니다.\n숫자 1~9까지만 기입이 가능합니다.");
+                                alert.showAndWait();
+                            } else if (ch < 49 || ch > 57) { // 알파벳이나 특수문자를 기입하였을 경우
+                                alert.setContentText("알파벳 및 특수문자는 기입이 불가합니다.\n숫자 1~9까지만 기입이 가능합니다.");
+                                alert.showAndWait();
+                            }
+                        }
+                    }
+                });
                 if (!"".equals(current.getText())) {
                     current.setEditable(false);
                     if (i % 3 == 2 && j % 3 == 2) {
