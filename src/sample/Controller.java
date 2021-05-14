@@ -3,17 +3,14 @@ package sample;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
@@ -38,26 +35,27 @@ public class Controller implements Initializable {
     private Timeline timeline;
 
 
-    HashSet<Integer> [] rows = new HashSet[9];
-    HashSet<Integer> [] cols = new HashSet[9];
-    HashSet<Integer> [] box = new HashSet[9];
+    HashSet<Integer>[] rows = new HashSet[9];
+    HashSet<Integer>[] cols = new HashSet[9];
+    HashSet<Integer>[] box = new HashSet[9];
 
-    HashSet<Integer> [] checkRows = new HashSet[9];
-    HashSet<Integer> [] checkCols = new HashSet[9];
-    HashSet<Integer> [] checkBox = new HashSet[9];
+    HashSet<Integer>[] checkRows = new HashSet[9];
+    HashSet<Integer>[] checkCols = new HashSet[9];
+    HashSet<Integer>[] checkBox = new HashSet[9];
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         arr = new ArrayList<>(9);
         for (int i = 0; i < 9; i++) {
-            ArrayList row = new ArrayList<TextField>();
+            ArrayList<TextField> row = new ArrayList<>();
             for (int j = 0; j < 9; j++) {
-                //arr.add(new TextField(i+":"+j));
                 TextField tf = new TextField("");
-                // textfield의 크기와 정렬 조정
+
+                // text field 의 크기와 정렬 조정
                 tf.setPrefSize(50, 55);
                 tf.setAlignment(Pos.CENTER);
 
+                // sudoku 처럼 보이기 위해 각 row/col 값을 계산해 outline 생성
                 if (i % 3 == 2 && j % 3 == 2) {
                     tf.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;");
                 } else if (i % 3 == 2 && j == 0) {
@@ -77,29 +75,24 @@ public class Controller implements Initializable {
                 }
 
                 row.add(tf);
-                gp_sudoku_pane.add((TextField)row.get(row.size()-1), j, i);
+                gp_sudoku_pane.add(row.get(row.size()-1), j, i);
             }
             arr.add(row);
 
         }
         timer_label.setStyle("-fx-font-size: 1.5em;");
-
-
-
     }
 
     @FXML
     public void handleGenerate() {
         generateRandom();
-
     }
 
+    @FXML
     public void handleConfirm() {
         // 아직 게임이 생성되지 않았을 경우 
         if (answer == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Sudoku 게임 미시작");
-            alert.setContentText("Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 게임 결과를 확인하기 위해 눌러주세요.");
+            Alert alert = createAlert("warning", null, "Sudoku 게임 미시작", "Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 게임 결과를 확인하기 위해 눌러주세요.");
             alert.showAndWait();
         } else { // 게임이 생성된 경우
             // 정답일 경우
@@ -107,11 +100,8 @@ public class Controller implements Initializable {
                 // 타이머 중지 
                 timeline.stop();
 
-                // alert창 생성 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Sudoku 게임 결과");
-                alert.setHeaderText("Sudoku 게임 결과입니다.");
-                alert.setContentText("정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다.");
+                // alert 창 생성
+                Alert alert = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.", "정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다." );
 
                 // 새 게임 시작하기 버튼 생성 
                 ButtonType buttonNewGame = new ButtonType("새 게임 시작하기");
@@ -120,7 +110,7 @@ public class Controller implements Initializable {
                 // 사용자가 어떤 버튼을 눌렀는지 결과값 받아오기 
                 Optional<ButtonType> result = alert.showAndWait();
 
-                if (result.get() == buttonNewGame) { // 새 게임 시작 
+                if (result.get() == buttonNewGame) { // 새 게임 시작
                     alert.hide();
                     count = 0;
                     timer_label.setText(Integer.toString(0));
@@ -128,45 +118,37 @@ public class Controller implements Initializable {
                 } else if (result.get() == OK) { // 확인버튼 
                     alert.hide();
                 }
-                // 정답이 아닐 경우
-            } else {
+
+            } else { // 정답이 아닐 경우
                 // alert 창 생성
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Sudoku 게임 결과");
-                alert.setHeaderText("Sudoku 게임 결과입니다.");
-                alert.setContentText("정답이 아닙니다. 다시 한 번 시도해보세요 :)");
+                Alert alert  = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.","정답이 아닙니다. 다시 한 번 시도해보세요 :)"  );
                 alert.showAndWait();
             }
         }
-        
-
     }
 
-    public void handleAnswer() throws IOException {
+    @FXML
+    public void handleAnswer() {
+        Alert alert;
         if (answer == null ) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Sudoku 게임 미시작");
-            alert.setContentText("Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 정답을 확인하기 위해 눌러주세요.");
-            alert.showAndWait();
+            alert = createAlert("warning", null, "Sudoku 게임 미시작", "Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 정답을 확인하기 위해 눌러주세요.");
         } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Sudoku 게임 정답");
-            alert.setHeaderText("Sudoku 게임 정답입니다.");
-            String sudokuAnswer = "";
+            alert = createAlert("information", "Sudoku 게임 정답", "Sudoku 게임 정답입니다.", null);
+            StringBuilder sudokuAnswer = new StringBuilder();
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 9; j++) {
-                    sudokuAnswer += answer.get(i).get(j) + " ";
+                    sudokuAnswer.append(answer.get(i).get(j)).append(" ");
                 }
-                sudokuAnswer += "\n";
+                sudokuAnswer.append("\n");
             }
-            alert.setContentText(sudokuAnswer);
-            alert.showAndWait();
+            alert.setContentText(sudokuAnswer.toString());
         }
+        alert.showAndWait();
 
     }
 
     public void timing() {
-        // 만약 이미 generate된 sudoku 퍼즐이 있는데, 다시 한 번 generate를 눌렀을 경우, timeline을 멈춘다. 
+        // 만약 이미 generate 된 sudoku 퍼즐이 있는데, 다시 한 번 generate 를 눌렀을 경우, timeline 을 멈춘다.
         if (timeline != null) {
             timeline.stop();
         }
@@ -184,7 +166,7 @@ public class Controller implements Initializable {
      */
     private void generateRandom(){
         timing();
-        removedArr = new ArrayList<Integer>();
+        removedArr = new ArrayList<>();
         allElements = new ArrayList<>();
 
         for (int i = 0; i < 81; i++) {
@@ -200,9 +182,9 @@ public class Controller implements Initializable {
             }
         }
         for (int i = 0; i < 9; i++ ) {
-            rows[i] = new HashSet<Integer>();
-            cols[i] = new HashSet<Integer>();
-            box[i] = new HashSet<Integer>();
+            rows[i] = new HashSet<>();
+            cols[i] = new HashSet<>();
+            box[i] = new HashSet<>();
         }
 
         // 스도쿠 완성하기 (top 3 rows and 1st column)
@@ -215,14 +197,12 @@ public class Controller implements Initializable {
         // 백트래킹으로 스도쿠 완성
         // 만약 스도쿠가 완성되지 않는다면?
         if (!backtracking()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Sudoku 게임 생성 오류");
-            alert.setContentText("게임 생성에 오류가 발생했습니다. \nGenerate 버튼을 다시 한 번 눌러주세요.");
+            Alert alert = createAlert("warning", null, "Sudoku 게임 생성 오류", "게임 생성에 오류가 발생했습니다. \nGenerate 버튼을 다시 한 번 눌러주세요.");
             alert.showAndWait();
         } else {
             answer = new ArrayList<>(9);
             for (int i = 0; i < 9; i++) {
-                ArrayList<Integer> temp = new ArrayList<Integer>(9);
+                ArrayList<Integer> temp = new ArrayList<>(9);
                 for (int j = 0; j < 9; j++) {
                     Integer value = Integer.parseInt(arr.get(i).get(j).getText());
                     temp.add(value);
@@ -235,13 +215,13 @@ public class Controller implements Initializable {
 
     private void generateTopLeftBox() {
         // 좌상단 박스 생성하기
-        ArrayList<Integer> numbers = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> numbers = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
         Collections.shuffle(numbers);
         for (int k = 0; k < 9; k++) {
             int i = k / 3, j = k % 3;
             arr.get(i).get(j).setText(Integer.toString(numbers.get(k)));
 
-            // set에 추가한다.
+            // set 에 추가한다.
             rows[i].add(numbers.get(k));
             cols[j].add(numbers.get(k));
             box[0].add(numbers.get(k));
@@ -252,7 +232,7 @@ public class Controller implements Initializable {
 
     private void generateFirstRow() {
         // 첫번째 col 생성하기
-        ArrayList<Integer> firstRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> firstRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
         for (Integer e : rows[0]) {
             firstRowAvailable.remove(e);
         }
@@ -274,7 +254,7 @@ public class Controller implements Initializable {
     private void generateTopMiddleBox() {
         // 중앙 상단 박스 생성하기
         // 가능한 숫자 나열
-        ArrayList<Integer> middleSecondRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> middleSecondRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
 
         // 중앙 박스에 이미 있는 요소들 제거
         for (Integer e : box[1]) {
@@ -286,12 +266,12 @@ public class Controller implements Initializable {
         }
 
         // 2번째 row에 필수적으로 있어야 하는 값 확인
-        ArrayList<Integer> mustBeInMiddleSecondRow = new ArrayList<Integer>();
+        ArrayList<Integer> mustBeInMiddleSecondRow = new ArrayList<>();
         // 3번째 row에 숫자가 있어서 2번째 row에 필수적으로 들어가야 하는 값 추가
         for (Integer e: rows[2]) {
             if (middleSecondRowAvailable.contains(e)) {
                 mustBeInMiddleSecondRow.add(e);
-                middleSecondRowAvailable.remove(middleSecondRowAvailable.indexOf(e));
+                middleSecondRowAvailable.remove(e);
             }
         }
 
@@ -308,7 +288,7 @@ public class Controller implements Initializable {
         }
 
         // 마지막 세번째 줄 추가하기
-        ArrayList<Integer> middleThirdRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> middleThirdRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
         // 중앙 박스에 이미 있는 요소들 제거
         for (Integer e : box[1]) {
             middleThirdRowAvailable.remove(e);
@@ -327,8 +307,8 @@ public class Controller implements Initializable {
     }
 
     private void generateTopRightBox() {
-        ArrayList<Integer> rightSecondRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-        ArrayList<Integer> rightThirdRowAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> rightSecondRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> rightThirdRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
 
         // 2번째 row에 있는 요소들 제거
         for (Integer e : rows[1]) {
@@ -360,7 +340,7 @@ public class Controller implements Initializable {
     }
 
     private void generateFirstCol() {
-        ArrayList<Integer> firstColAvailable = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> firstColAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
 
         // 2번째 row에 있는 요소들 제거
         for (Integer e : cols[0]) {
@@ -432,7 +412,6 @@ public class Controller implements Initializable {
     private boolean backtracking() {
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-
                 // 만약 해당 위치에 숫자가 있다면 패스
                 if (!arr.get(i).get(j).getText().equals("")) continue;
                 // 비어 있는 경우라면 해당 위치에 어떤 값이 들어갈 수 있는지 확인
@@ -446,7 +425,6 @@ public class Controller implements Initializable {
                     box[ij].add(k);
 
                     if (backtracking()) {
-
                         return true;
                     }
                     else {
@@ -464,7 +442,7 @@ public class Controller implements Initializable {
 
     private ArrayList<Integer> validValues(int i, int j) {
         // 가능한 값들 선언
-        ArrayList<Integer> available = new ArrayList<Integer>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> available = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
 
         // 가로에 있는 값들을 다 제거한다.
         for (Integer e : rows[i]) {
@@ -491,26 +469,22 @@ public class Controller implements Initializable {
             for (int j = 0; j < 9; j++) {
                 TextField current = arr.get(i).get(j);
                 // 각 textfield마다 키보드 이벤트 추가
-                current.setOnKeyPressed(new EventHandler<KeyEvent>() {
-                    @Override
-                    public void handle(KeyEvent event) {
-                        KeyCode key = event.getCode();
-                        String s = event.getText();
+                current.setOnKeyPressed(event -> {
+                    KeyCode key = event.getCode();
+                    String s = event.getText();
 
-                        // alert 창 생성
-                        Alert alert = new Alert(Alert.AlertType.WARNING);
-                        alert.setHeaderText("문자 기입 오류");
-                        // Backspace 키를 제외한 후, key 분석
-                        if (key != KeyCode.BACK_SPACE) {
-                            // char을 통해 알파벳인지/특수문자인지 확인하기 위해
-                            char ch = s.charAt(0);
-                            if (key == KeyCode.DIGIT0 || key == KeyCode.NUMPAD0) {// 숫자 0을 기입하였을 경우
-                                alert.setContentText("숫자 0은 기입이 불가합니다.\n숫자 1~9까지만 기입이 가능합니다.");
-                                alert.showAndWait();
-                            } else if (ch < 49 || ch > 57) { // 알파벳이나 특수문자를 기입하였을 경우
-                                alert.setContentText("알파벳 및 특수문자는 기입이 불가합니다.\n숫자 1~9까지만 기입이 가능합니다.");
-                                alert.showAndWait();
-                            }
+                    // alert 창 생성
+                    Alert alert = createAlert("warning", null, "문자 기입 오류", null);
+                    // Backspace 키를 제외한 후, key 분석
+                    if (key != KeyCode.BACK_SPACE) {
+                        // char을 통해 알파벳인지/특수문자인지 확인하기 위해
+                        char ch = s.charAt(0);
+                        if (key == KeyCode.DIGIT0 || key == KeyCode.NUMPAD0) {// 숫자 0을 기입하였을 경우
+                            alert.setContentText("숫자 0은 기입이 불가합니다.\n숫자 1~9까지만 기입이 가능합니다.");
+                            alert.showAndWait();
+                        } else if (ch < 49 || ch > 57) { // 알파벳이나 특수문자를 기입하였을 경우
+                            alert.setContentText("알파벳 및 특수문자는 기입이 불가합니다.\n숫자 1~9까지만 기입이 가능합니다.");
+                            alert.showAndWait();
                         }
                     }
                 });
@@ -564,9 +538,9 @@ public class Controller implements Initializable {
 
     private Boolean correct() {
         for (int i = 0; i < 9; i++ ) {
-            checkRows[i] = new HashSet<Integer>();
-            checkCols[i] = new HashSet<Integer>();
-            checkBox[i] = new HashSet<Integer>();
+            checkRows[i] = new HashSet<>();
+            checkCols[i] = new HashSet<>();
+            checkBox[i] = new HashSet<>();
         }
 
         for (int i = 0; i < 9; i++) {
@@ -587,5 +561,25 @@ public class Controller implements Initializable {
             }
         }
         return true;
+    }
+
+    private Alert createAlert(String type, String title, String header, String content) {
+        Alert alert;
+        if ("warning".equals(type)) {
+            alert = new Alert(Alert.AlertType.WARNING);
+        } else {
+            alert = new Alert(Alert.AlertType.INFORMATION);
+        }
+        if (title != null) {
+            alert.setTitle(title);
+        }
+        if (header != null) {
+            alert.setHeaderText(header);
+        }
+        if (content != null) {
+            alert.setContentText(content);
+        }
+
+        return alert;
     }
 }
