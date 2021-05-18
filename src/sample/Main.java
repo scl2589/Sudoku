@@ -14,6 +14,10 @@ public class Main extends Application {
         primaryStage.setTitle("Hello Sudoku");
         primaryStage.setScene(new Scene(root, 500, 550));
         primaryStage.show();
+        SQLiteManager manager = new SQLiteManager();
+        manager.createConnection();     // 연결
+        manager.closeConnection();      // 연결 해제
+        manager.ensureConnection();     // 재연결
     }
 
     public static void main(String[] args) {
