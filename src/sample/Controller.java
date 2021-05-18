@@ -12,6 +12,7 @@ import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.*;
 
 import static javafx.scene.control.ButtonType.OK;
@@ -29,10 +30,14 @@ public class Controller implements Initializable {
     private ArrayList<Integer> removedArr;
     private ArrayList<Integer> allElements;
     private ArrayList<ArrayList<Integer>> answer;
-    private ArrayList<ArrayList<String>> question;
+    private StringBuilder question;
 
     private int count;
     private Timeline timeline;
+    private Date start_time;
+    private Date end_time;
+    private StringBuilder sudokuAnswer;
+    private String answer2;
 
 
     HashSet<Integer>[] rows = new HashSet[9];
@@ -89,7 +94,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    public void handleConfirm() {
+    public void handleConfirm() throws SQLException {
         // 아직 게임이 생성되지 않았을 경우 
         if (answer == null) {
             Alert alert = createAlert("warning", null, "Sudoku 게임 미시작", "Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 게임 결과를 확인하기 위해 눌러주세요.");
@@ -99,6 +104,23 @@ public class Controller implements Initializable {
             if (correct()) {
                 // 타이머 중지 
                 timeline.stop();
+
+                // 게임이 끝났으므로 게임 끝난 시각 저장
+                end_time = new Date();
+                System.out.println(end_time);
+
+
+                // 정답을 String 형태로 변환하기
+                sudokuAnswer = new StringBuilder();
+                for (int i = 0; i < 9; i++) {
+                    for (int j = 0; j < 9; j++) {
+                        sudokuAnswer.append(answer.get(i).get(j)).append(" ");
+                    }
+                    sudokuAnswer.append("\n");
+                }
+                // DB에 데이터 추가
+                insertData(start_time, end_time, count, sudokuAnswer.toString(), question.toString());
+
 
                 // alert 창 생성
                 Alert alert = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.", "정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다." );
@@ -136,13 +158,7 @@ public class Controller implements Initializable {
             alert = createAlert("warning", null, "Sudoku 게임 미시작", "Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 정답을 확인하기 위해 눌러주세요.");
         } else {
             alert = createAlert("information", "Sudoku 게임 정답", "Sudoku 게임 정답입니다.", null);
-            StringBuilder sudokuAnswer = new StringBuilder();
-            for (int i = 0; i < 9; i++) {
-                for (int j = 0; j < 9; j++) {
-                    sudokuAnswer.append(answer.get(i).get(j)).append(" ");
-                }
-                sudokuAnswer.append("\n");
-            }
+
             alert.setContentText(sudokuAnswer.toString());
         }
         alert.showAndWait();
@@ -217,6 +233,10 @@ public class Controller implements Initializable {
             }
             // 스도쿠 문제를 생성하기 위해 element를 하나씩 지운다.
             removeElement();
+
+            // 게임이 시작됐으므로 현재 시간을 저장해놓는다.
+            start_time = new Date();
+            System.out.println(start_time);
         }
     }
 
@@ -396,15 +416,19 @@ public class Controller implements Initializable {
 
         }
 
-        if (removedArr.size()>= 30) {
-            question = new ArrayList<>(9);
+        if (removedArr.size()>= 2) {
+            // Sudoku 문제를 String 형태로 변환하기
+            question = new StringBuilder();
             for (int i = 0; i < 9; i++) {
-                ArrayList<String> temp = new ArrayList<>(9);
                 for (int j = 0; j < 9; j++) {
                     String value = arr.get(i).get(j).getText();
-                    temp.add(value);
+                    if ("".equals(value)) {
+                        question.append("_ ");
+                    } else {
+                        question.append(value).append(" ");
+                    }
                 }
-                question.add(temp);
+                question.append("\n");
             }
             setTextFieldStyle();
         } else{
@@ -588,5 +612,13 @@ public class Controller implements Initializable {
         }
 
         return alert;
+    }
+
+    // DB에 데이터 추가하는 메서드
+    public void insertData(Date start_time, Date end_time, int spent_time, String answer, String problem) throws SQLException {
+        System.out.println("Insert data() called");
+        SQLiteManager manager = new SQLiteManager();
+        Object[] params = {start_time, end_time, spent_time, answer, problem};
+        manager.insertGameData(params);
     }
 }

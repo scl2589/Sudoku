@@ -2,8 +2,8 @@ package sample;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 
 public class SQLiteManager {
 
@@ -42,9 +42,6 @@ public class SQLiteManager {
             // DB 연결 객체 생성
             this.conn = DriverManager.getConnection(this.url);
 
-            // 로그 출력
-            System.out.println("CONNECTED");
-
             // 옵션 설정
             //   - 자동 커밋
             this.conn.setAutoCommit(OPT_AUTO_COMMIT);
@@ -66,9 +63,6 @@ public class SQLiteManager {
             e.printStackTrace();
         } finally {
             this.conn = null;
-
-            // 로그 출력
-            System.out.println("CLOSED");
         }
     }
 
@@ -89,5 +83,47 @@ public class SQLiteManager {
     // DB 연결 객체 가져오기
     public Connection getConnection() {
         return this.conn;
+    }
+
+    // DB 삽입
+    public void insertGameData(Object[] data) throws SQLException {
+        final String sql = "INSERT INTO sudoku(start_time, end_time, spent_time, answer, problem) VALUES(?, ?, ?, ?, ?)";
+        Connection conn = ensureConnection();
+        PreparedStatement pstmt = null;
+
+        int inserted = 0;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setObject(1, data[0]);
+            pstmt.setObject(2, data[1]);
+            pstmt.setObject(3, data[2]);
+            pstmt.setObject(4, data[3]);
+            pstmt.setObject(5, data[4]);
+
+            // 쿼리 실행
+            pstmt.executeUpdate();
+
+            inserted = pstmt.getUpdateCount();
+
+            // 트랜잭션 commit
+            conn.commit();
+        } catch (SQLException e) {
+            e.getMessage();
+            // 트랜잭션 ROLLBACK
+            if( conn != null ) {
+                conn.rollback();
+            }
+
+            // 오류
+            inserted = -1;
+        } finally {
+            if( pstmt != null ) {
+                try {
+                    pstmt.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
