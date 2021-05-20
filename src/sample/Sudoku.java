@@ -8,13 +8,12 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 
 public class Sudoku {
+    private final IntegerProperty id;
     private final StringProperty startTime;
     private final ObjectProperty<LocalDateTime> endTime;
     private final IntegerProperty spentTime;
@@ -32,6 +31,8 @@ public class Sudoku {
     public Sudoku(int id, LocalDateTime startTime, LocalDateTime endTime, int spentTime, String problem, String answer) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMATTER);
         String formatStartTime = startTime.format(formatter);
+
+        this.id = new SimpleIntegerProperty(id);
         this.startTime = new SimpleStringProperty(formatStartTime);
         this.spentTime = new SimpleIntegerProperty(spentTime);
 
@@ -39,6 +40,9 @@ public class Sudoku {
         this.endTime = new SimpleObjectProperty<LocalDateTime>(endTime);
         this.answer = new SimpleStringProperty(answer);
         this.problem = new SimpleStringProperty(problem);
+    }
+    public IntegerProperty getId() {
+        return id;
     }
 
     public String getStartTime() {
@@ -52,18 +56,6 @@ public class Sudoku {
     public void setStartTime(String startTime) {
         this.startTime.set(startTime);
     }
-
-    //    public LocalDateTime getStartTime() {
-//        return startTime.get();
-//    }
-//
-//    public ObjectProperty<LocalDateTime> startTimeProperty() {
-//        return startTime;
-//    }
-//
-//    public void setStartTime(LocalDateTime startTime) {
-//        this.startTime.set(startTime);
-//    }
 
     public LocalDateTime getEndTime() {
         return endTime.get();

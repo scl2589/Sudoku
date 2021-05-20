@@ -132,7 +132,7 @@ public class SQLiteManager {
     }
 
 
-    // 데이터 조회 함수
+    // 데이터 조회 메소드
     public void selectSudokuList() {
         String sql = "SELECT * FROM sudoku";
 
@@ -156,6 +156,28 @@ public class SQLiteManager {
     public ObservableList<Sudoku> getSudokuData() {
         return sudokuData;
     }
+    
+    // 데이터 삭제 메소드 
+    public void deleteGameData(int id) {
+        final String sql = "DELETE FROM SUDOKU WHERE ID = " + id;
+        Connection conn = ensureConnection();
+        PreparedStatement pstmt = null;
 
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.executeUpdate();
+            conn.commit();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (pstmt != null) {
+                try {
+                    pstmt.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
 }

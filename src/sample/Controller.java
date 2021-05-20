@@ -3,6 +3,7 @@ package sample;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.property.IntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -710,14 +711,15 @@ public class Controller implements Initializable {
     private void handleDeleteSudoku() {
         int selectedIndex = sudokuTable.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
+            int selectedDBIndex = sudokuTable.getSelectionModel().getSelectedItem().getId().getValue().intValue();
             sudokuTable.getItems().remove(selectedIndex);
+            SQLiteManager manager = new SQLiteManager();
+            manager.deleteGameData(selectedDBIndex);
         } else {
-            // 아무 sudoku 게임 기록도 선택하지 않은 경우
+            // 아무 sudoku 게임 기록도 선택하지 않은 경우)
             Alert alert = createAlert("warning", "오류", "선택된 기록이 없습니다.", "스도쿠 게임 기록을 선택해주세요.");
             alert.showAndWait();
         }
-
-
     }
 
 }
