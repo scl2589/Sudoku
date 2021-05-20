@@ -23,6 +23,7 @@ public class Controller implements Initializable {
     @FXML private Button btn_generate;
     @FXML private Button btn_confirm;
     @FXML private Button btn_answer;
+    @FXML private Button btn_delete;
     @FXML private Label timer_label;
     @FXML private TableView<Sudoku> sudokuTable;
     @FXML private TableColumn<Sudoku, String> startTimeColumn;
@@ -703,6 +704,20 @@ public class Controller implements Initializable {
                 }
             }
         }
+    }
+
+    @FXML
+    private void handleDeleteSudoku() {
+        int selectedIndex = sudokuTable.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0) {
+            sudokuTable.getItems().remove(selectedIndex);
+        } else {
+            // 아무 sudoku 게임 기록도 선택하지 않은 경우
+            Alert alert = createAlert("warning", "오류", "선택된 기록이 없습니다.", "스도쿠 게임 기록을 선택해주세요.");
+            alert.showAndWait();
+        }
+
+
     }
 
 }
