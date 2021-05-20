@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -20,20 +21,21 @@ public class Sudoku {
     private final StringProperty problem;
 
     // 디폴트 생성자
-    public Sudoku() {
-        this(null, 0);
+    public Sudoku(StringProperty problem) {
+        this(0, null, null, 0, null, null);
     }
 
     // 데이터를 초기화하는 생성자
-    public Sudoku(Date startTime, int spentTime) {
+    public Sudoku(int id, LocalDateTime startTime, LocalDateTime endTime, int spentTime, String problem, String answer) {
         this.startTime = new SimpleObjectProperty(startTime);
         this.spentTime = new SimpleIntegerProperty(spentTime);
 
         // 테스트를 위해 초기화하는 더미 데이터
-        this.endTime = new SimpleObjectProperty<LocalDateTime>(LocalDateTime.of(2019, 2, 21, 12, 25, 3333));
-        this.answer = new SimpleStringProperty("answer");
-        this.problem = new SimpleStringProperty("question");
+        this.endTime = new SimpleObjectProperty<LocalDateTime>(endTime);
+        this.answer = new SimpleStringProperty(answer);
+        this.problem = new SimpleStringProperty(problem);
     }
+
 
     public LocalDateTime getStartTime() {
         return startTime.get();

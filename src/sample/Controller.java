@@ -13,6 +13,7 @@ import javafx.util.Duration;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static javafx.scene.control.ButtonType.OK;
@@ -24,6 +25,9 @@ public class Controller implements Initializable {
     @FXML private Button btn_confirm;
     @FXML private Button btn_answer;
     @FXML private Label timer_label;
+    @FXML private TableView<Sudoku> sudokuTable;
+    @FXML private TableColumn<Sudoku, LocalDateTime> startTimeColumn;
+    @FXML private TableColumn<Sudoku, Integer> spentTimeColumn;
 
 
     private ArrayList<ArrayList<TextField>> arr;
@@ -37,8 +41,6 @@ public class Controller implements Initializable {
     private Date start_time;
     private Date end_time;
     private StringBuilder sudokuAnswer;
-    private String answer2;
-
 
     HashSet<Integer>[] rows = new HashSet[9];
     HashSet<Integer>[] cols = new HashSet[9];
@@ -86,6 +88,15 @@ public class Controller implements Initializable {
 
         }
         timer_label.setStyle("-fx-font-size: 1.5em;");
+
+        // 테이블 초기화하기
+        startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
+        spentTimeColumn.setCellValueFactory(cellData -> cellData.getValue().spentTimeProperty().asObject());
+
+        // 테이블에 observable 리스트 데이터를 추가한다.
+        SQLiteManager manager = new SQLiteManager();
+        manager.selectSudokuList();
+        sudokuTable.setItems(manager.getSudokuData());
     }
 
     @FXML
@@ -107,8 +118,6 @@ public class Controller implements Initializable {
 
                 // 게임이 끝났으므로 게임 끝난 시각 저장
                 end_time = new Date();
-                System.out.println(end_time);
-
 
                 // 정답을 String 형태로 변환하기
                 sudokuAnswer = new StringBuilder();
@@ -120,7 +129,6 @@ public class Controller implements Initializable {
                 }
                 // DB에 데이터 추가
                 insertData(start_time, end_time, count, sudokuAnswer.toString(), question.toString());
-                select();
 
                 // alert 창 생성
                 Alert alert = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.", "정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다." );
@@ -622,17 +630,6 @@ public class Controller implements Initializable {
         manager.insertGameData(params);
     }
 
-    public void select() {
-        System.out.println("SELECT CALLED");
-//        final Map<String, Object> dataMap = new HashMap<String, Object>();
-//        dataMap.put("START_DATE", new Date());
-//        dataMap.put("SPENT_TIME", 5);
-        SQLiteManager manager = new SQLiteManager();
-        manager.selectSudokuList();
-//
-//        manager.printMapList(result);
-    }
-
     //    public ObservableList<Sudoku> getSudokuDate() {
 //        String query = "SELECT * FROM sudoku";
 //        // 조회할 데이터
@@ -645,4 +642,5 @@ public class Controller implements Initializable {
 //
 //        return sudokuData;
 //    }
+
 }

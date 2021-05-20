@@ -69,11 +69,11 @@
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                   </GridPane>
-                  <TableView maxWidth="300.0" prefHeight="114.0" prefWidth="300.0">
+                  <TableView fx:id="sudokuTable" maxWidth="300.0" prefHeight="114.0" prefWidth="300.0">
                     <columns>
-                      <TableColumn fx:id="col_startdate" prefWidth="140.0" text="Start Date" />
-                      <TableColumn fx:id="col_spenttime" maxWidth="300.0" minWidth="98.0" prefWidth="124.0" text="Spent Time" />
-                        <TableColumn maxWidth="300.0" minWidth="109.0" prefWidth="109.0" />
+                      <TableColumn fx:id="startTimeColumn" prefWidth="204.0" text="Start Date" />
+                      <TableColumn fx:id="spentTimeColumn" maxWidth="300.0" minWidth="21.0" prefWidth="74.0" text="Spent Time" />
+                        <TableColumn maxWidth="300.0" minWidth="6.0" prefWidth="6.0" />
                     </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
