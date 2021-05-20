@@ -120,7 +120,7 @@ public class Controller implements Initializable {
                 }
                 // DB에 데이터 추가
                 insertData(start_time, end_time, count, sudokuAnswer.toString(), question.toString());
-
+                select();
 
                 // alert 창 생성
                 Alert alert = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.", "정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다." );
@@ -621,4 +621,28 @@ public class Controller implements Initializable {
         Object[] params = {start_time, end_time, spent_time, answer, problem};
         manager.insertGameData(params);
     }
+
+    public void select() {
+        System.out.println("SELECT CALLED");
+//        final Map<String, Object> dataMap = new HashMap<String, Object>();
+//        dataMap.put("START_DATE", new Date());
+//        dataMap.put("SPENT_TIME", 5);
+        SQLiteManager manager = new SQLiteManager();
+        manager.selectSudokuList();
+//
+//        manager.printMapList(result);
+    }
+
+    //    public ObservableList<Sudoku> getSudokuDate() {
+//        String query = "SELECT * FROM sudoku";
+//        // 조회할 데이터
+//        final Map<String, Object> dataMap = new HashMap<String, Object>();
+//        dataMap.put("START_DATE", new Date());
+//        dataMap.put("SPENT_TIME", 5);
+//
+//        // 데이터 조회
+//        List<Map<String, Object>> result = DQL.selectSudokuList(dataMap);
+//
+//        return sudokuData;
+//    }
 }
