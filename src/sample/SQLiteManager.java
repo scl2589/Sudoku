@@ -4,7 +4,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class SQLiteManager {
@@ -91,8 +90,8 @@ public class SQLiteManager {
 
     // DB 삽입
     public void insertGameData(Object[] data) throws SQLException {
-        final String sql = "INSERT INTO sudoku(start_time, end_time, spent_time, answer, problem) VALUES(?, ?, ?, ?, ?)";
-        Connection conn = ensureConnection();
+        final String sql = "INSERT INTO SUDOKU(nickname, start_time, end_time, spent_time, answer, problem) VALUES(?, ?, ?, ?, ?, ?)";
+        Connection conn = createConnection();
         PreparedStatement pstmt = null;
 
         int inserted = 0;
@@ -103,6 +102,7 @@ public class SQLiteManager {
             pstmt.setObject(3, data[2]);
             pstmt.setObject(4, data[3]);
             pstmt.setObject(5, data[4]);
+            pstmt.setObject(6, data[5]);
 
             // 쿼리 실행
             pstmt.executeUpdate();
@@ -121,6 +121,7 @@ public class SQLiteManager {
             // 오류
             inserted = -1;
         } finally {
+            closeConnection();
             if( pstmt != null ) {
                 try {
                     pstmt.close();
@@ -141,12 +142,13 @@ public class SQLiteManager {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 int id = rs.getInt("id");
+                String nickname = rs.getString("nickname");
                 int spent_time = rs.getInt("spent_time");
                 String problem = rs.getString("problem");
                 String answer = rs.getString("answer");
                 LocalDateTime start_time = rs.getTimestamp("start_time").toLocalDateTime();
                 LocalDateTime end_time = rs.getTimestamp("end_time").toLocalDateTime();
-                sudokuData.add(new Sudoku(id, start_time, end_time, spent_time, problem, answer));
+                sudokuData.add(new Sudoku(id, nickname, start_time, end_time, spent_time, problem, answer));
             }
         } catch (SQLException e) {
             e.getMessage();

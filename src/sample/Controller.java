@@ -30,7 +30,7 @@ public class Controller implements Initializable {
     @FXML private TableColumn<Sudoku, String> startTimeColumn;
     @FXML private TableColumn<Sudoku, Integer> spentTimeColumn;
 
-
+    private String nickname;
     private ArrayList<ArrayList<TextField>> arr;
     private ArrayList<Integer> removedArr;
     private ArrayList<Integer> allElements;
@@ -42,6 +42,7 @@ public class Controller implements Initializable {
     private Date start_time;
     private Date end_time;
     private StringBuilder sudokuAnswer;
+    private SQLiteManager manager = new SQLiteManager();
 
     HashSet<Integer>[] rows = new HashSet[9];
     HashSet<Integer>[] cols = new HashSet[9];
@@ -90,17 +91,10 @@ public class Controller implements Initializable {
         }
         timer_label.setStyle("-fx-font-size: 1.5em;");
 
-        // 테이블 초기화하기
-        startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
-        spentTimeColumn.setCellValueFactory(cellData -> cellData.getValue().spentTimeProperty().asObject());
+        initializeTable();
 
-        sudokuTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> showSudokuGame(newValue));
-
-        // 테이블에 observable 리스트 데이터를 추가한다.
-        SQLiteManager manager = new SQLiteManager();
-        manager.selectSudokuList();
-        sudokuTable.setItems(manager.getSudokuData());
+        //닉네임 받기
+        getNickname();
     }
 
     @FXML
@@ -132,7 +126,10 @@ public class Controller implements Initializable {
                     sudokuAnswer.append("\n");
                 }
                 // DB에 데이터 추가
-                insertData(start_time, end_time, count, sudokuAnswer.toString(), question.toString());
+                insertData(nickname, start_time, end_time, count, sudokuAnswer.toString(), question.toString());
+
+                // TableView 갱신하기
+                initializeTable();
 
                 // alert 창 생성
                 Alert alert = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.", "정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다." );
@@ -626,10 +623,22 @@ public class Controller implements Initializable {
     }
 
     // DB에 데이터 추가하는 메서드
-    public void insertData(Date start_time, Date end_time, int spent_time, String answer, String problem) throws SQLException {
-        SQLiteManager manager = new SQLiteManager();
-        Object[] params = {start_time, end_time, spent_time, answer, problem};
+    private void insertData(String nickname, Date start_time, Date end_time, int spent_time, String answer, String problem) throws SQLException {
+        Object[] params = {nickname, start_time, end_time, spent_time, answer, problem};
         manager.insertGameData(params);
+    }
+
+    private void initializeTable() {
+        // 테이블 초기화하기
+        startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
+        spentTimeColumn.setCellValueFactory(cellData -> cellData.getValue().spentTimeProperty().asObject());
+
+        sudokuTable.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> showSudokuGame(newValue));
+
+        // 테이블에 observable 리스트 데이터를 추가한다.
+        manager.selectSudokuList();
+        sudokuTable.setItems(manager.getSudokuData());
     }
 
 
@@ -713,7 +722,6 @@ public class Controller implements Initializable {
         if (selectedIndex >= 0) {
             int selectedDBIndex = sudokuTable.getSelectionModel().getSelectedItem().getId().getValue().intValue();
             sudokuTable.getItems().remove(selectedIndex);
-            SQLiteManager manager = new SQLiteManager();
             manager.deleteGameData(selectedDBIndex);
         } else {
             // 아무 sudoku 게임 기록도 선택하지 않은 경우)
@@ -722,4 +730,19 @@ public class Controller implements Initializable {
         }
     }
 
+    private void getNickname() {
+        // 닉네임 받기;
+        TextInputDialog dialog = new TextInputDialog("");
+        dialog.setTitle("닉네임 입력");
+        dialog.setHeaderText("닉네임을 입력해주세요.");
+
+        // 입력 취소는 disable
+        dialog.getDialogPane().lookupButton(ButtonType.CANCEL).setDisable(true);
+
+        Optional<String> result = dialog.showAndWait();
+
+        result.ifPresent(name -> {
+            nickname = name;
+        });
+    }
 }

@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Sudoku {
     private final IntegerProperty id;
+    private final StringProperty nickname;
     private final StringProperty startTime;
     private final ObjectProperty<LocalDateTime> endTime;
     private final IntegerProperty spentTime;
@@ -24,15 +25,16 @@ public class Sudoku {
 
     // 디폴트 생성자
     public Sudoku(StringProperty problem) {
-        this(0, null, null, 0, null, null);
+        this(0, null, null, null, 0, null, null);
     }
 
     // 데이터를 초기화하는 생성자
-    public Sudoku(int id, LocalDateTime startTime, LocalDateTime endTime, int spentTime, String problem, String answer) {
+    public Sudoku(int id, String nickname, LocalDateTime startTime, LocalDateTime endTime, int spentTime, String problem, String answer) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMATTER);
         String formatStartTime = startTime.format(formatter);
 
         this.id = new SimpleIntegerProperty(id);
+        this.nickname = new SimpleStringProperty(nickname);
         this.startTime = new SimpleStringProperty(formatStartTime);
         this.spentTime = new SimpleIntegerProperty(spentTime);
 
@@ -41,6 +43,19 @@ public class Sudoku {
         this.answer = new SimpleStringProperty(answer);
         this.problem = new SimpleStringProperty(problem);
     }
+
+    public String getNickname() {
+        return nickname.get();
+    }
+
+    public StringProperty nicknameProperty() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname.set(nickname);
+    }
+
     public IntegerProperty getId() {
         return id;
     }
