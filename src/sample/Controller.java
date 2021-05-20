@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
@@ -27,6 +28,7 @@ public class Controller implements Initializable {
     @FXML private Button btn_delete;
     @FXML private Label timer_label;
     @FXML private TableView<Sudoku> sudokuTable;
+    @FXML private TableColumn<Sudoku, String> nicknameColumn;
     @FXML private TableColumn<Sudoku, String> startTimeColumn;
     @FXML private TableColumn<Sudoku, Integer> spentTimeColumn;
 
@@ -630,6 +632,9 @@ public class Controller implements Initializable {
 
     private void initializeTable() {
         // 테이블 초기화하기
+        sudokuTable.getItems().clear();
+
+        nicknameColumn.setCellValueFactory(cellData -> cellData.getValue().nicknameProperty());
         startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
         spentTimeColumn.setCellValueFactory(cellData -> cellData.getValue().spentTimeProperty().asObject());
 

@@ -137,7 +137,7 @@ public class SQLiteManager {
     public void selectSudokuList() {
         String sql = "SELECT * FROM sudoku";
 
-        try (Connection conn = ensureConnection();
+        try (Connection conn = createConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
@@ -152,6 +152,8 @@ public class SQLiteManager {
             }
         } catch (SQLException e) {
             e.getMessage();
+        } finally {
+            closeConnection();
         }
     }
 
