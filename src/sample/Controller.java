@@ -13,7 +13,6 @@ import javafx.util.Duration;
 
 import java.net.URL;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static javafx.scene.control.ButtonType.OK;
@@ -92,6 +91,9 @@ public class Controller implements Initializable {
         // 테이블 초기화하기
         startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
         spentTimeColumn.setCellValueFactory(cellData -> cellData.getValue().spentTimeProperty().asObject());
+
+        sudokuTable.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> showSudokuGame(newValue));
 
         // 테이블에 observable 리스트 데이터를 추가한다.
         SQLiteManager manager = new SQLiteManager();
@@ -244,7 +246,6 @@ public class Controller implements Initializable {
 
             // 게임이 시작됐으므로 현재 시간을 저장해놓는다.
             start_time = new Date();
-            System.out.println(start_time);
         }
     }
 
@@ -624,23 +625,84 @@ public class Controller implements Initializable {
 
     // DB에 데이터 추가하는 메서드
     public void insertData(Date start_time, Date end_time, int spent_time, String answer, String problem) throws SQLException {
-        System.out.println("Insert data() called");
         SQLiteManager manager = new SQLiteManager();
         Object[] params = {start_time, end_time, spent_time, answer, problem};
         manager.insertGameData(params);
     }
 
-    //    public ObservableList<Sudoku> getSudokuDate() {
-//        String query = "SELECT * FROM sudoku";
-//        // 조회할 데이터
-//        final Map<String, Object> dataMap = new HashMap<String, Object>();
-//        dataMap.put("START_DATE", new Date());
-//        dataMap.put("SPENT_TIME", 5);
-//
-//        // 데이터 조회
-//        List<Map<String, Object>> result = DQL.selectSudokuList(dataMap);
-//
-//        return sudokuData;
-//    }
+
+    private void showSudokuGame(Sudoku sudoku) {
+        if (sudoku != null) {
+            // sudoku board를 현재 선택한 정보로 바꾼다.
+            if (timeline != null) {
+                timeline.stop();
+            }
+
+            // 소요 시간으로 변경하기
+            count = sudoku.getSpentTime();
+            timer_label.setText(Integer.toString(count));
+
+            // sudoku board 시용자의 기존 보드로 바꾸기
+            String problem = sudoku.getProblem();
+            String answer = sudoku.getAnswer();
+
+            String[] rowList = problem.split("\n");
+            String[] answerRowList = answer.split("\n");
+
+            for (int i = 0; i < rowList.length; i++) {
+                String[] problemColList = rowList[i].split(" ");
+                String[] answerColList = answerRowList[i].split(" ");
+
+                for (int j = 0; j < problemColList.length; j++) {
+                    TextField current = arr.get(i).get(j);
+                    // 만약 사용자가 직접 입력한 답이라면?
+                    if (problemColList[j].equals("_")) {
+                        current.setText(answerColList[j]);
+                        if (i % 3 == 2 && j % 3 == 2) {
+                            current.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                        } else if (i == 0 && j == 0) {
+                            current.setStyle("-fx-border-width: 2 0 0 2; -fx-border-color: #364f6b;-fx-text-fill:black");
+                        } else if (i == 0 && j % 3 == 2 ) {
+                            current.setStyle("-fx-border-width: 2 2 0 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                        } else if ( i % 3 == 2 && j == 0) {
+                            current.setStyle("-fx-border-width: 0 0 2 2; -fx-border-color: #364f6b;-fx-text-fill:black");
+                        } else if (i % 3 == 2) {
+                            current.setStyle("-fx-border-width: 0 0 2 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                        } else if (j % 3 == 2) {
+                            current.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                        } else if ( i == 0 ) {
+                            current.setStyle("-fx-border-width: 2 0 0 0; -fx-border-color: #364f6b;-fx-text-fill:black");
+                        } else if ( j == 0 ) {
+                            current.setStyle("-fx-border-width: 0 0 0 2; -fx-border-color: #364f6b;-fx-text-fill:black");
+                        }
+                        else {
+                            current.setStyle("-fx-text-fill:black");
+                        }
+                    } else {
+                        current.setText(problemColList[j]);
+                        if (i % 3 == 2 && j % 3 == 2) {
+                            current.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                        } else if (i % 3 == 2 && j == 0) {
+                            current.setStyle("-fx-border-width: 0 0 2 2; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                        } else if (i == 0 && j ==0) {
+                            current.setStyle("-fx-border-width: 2 0 0 2; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                        } else if (i == 0 && j % 3 == 2) {
+                            current.setStyle("-fx-border-width: 2 2 0 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                        } else if (i % 3 == 2) {
+                            current.setStyle("-fx-border-width: 0 0 2 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                        } else if (j % 3 == 2) {
+                            current.setStyle("-fx-border-width: 0 2 0 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                        } else if ( j == 0) {
+                            current.setStyle("-fx-border-width: 0 0 0 2; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                        } else if ( i == 0) {
+                            current.setStyle("-fx-border-width: 2 0 0 0; -fx-border-color: #364f6b; -fx-text-fill:gray");
+                        } else {
+                            current.setStyle("-fx-text-fill:gray");
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 }
