@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <children>
       <VBox fx:id="vb_main" layoutX="135.0" layoutY="88.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -69,9 +69,9 @@
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                   </GridPane>
-                  <TableView fx:id="sudokuTable" maxWidth="300.0" prefHeight="114.0" prefWidth="300.0">
+                  <TableView fx:id="sudokuTable" maxWidth="400.0" prefHeight="114.0" prefWidth="400.0">
                     <columns>
-                      <TableColumn fx:id="startTimeColumn" maxWidth="500.0" prefWidth="199.0" text="Start Date" />
+                      <TableColumn fx:id="startTimeColumn" maxWidth="400.0" prefWidth="199.0" text="Start Date" />
                       <TableColumn fx:id="spentTimeColumn" maxWidth="200.0" minWidth="0.0" prefWidth="0.0" text="Spent Time" />
                         <TableColumn maxWidth="50.0" minWidth="6.0" prefWidth="20.0" />
                     </columns>

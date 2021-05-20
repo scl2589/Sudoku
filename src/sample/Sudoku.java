@@ -10,15 +10,18 @@ import javafx.beans.property.StringProperty;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 
 public class Sudoku {
-    private final ObjectProperty<LocalDateTime> startTime;
+    private final StringProperty startTime;
     private final ObjectProperty<LocalDateTime> endTime;
     private final IntegerProperty spentTime;
     private final StringProperty answer;
     private final StringProperty problem;
+
+    private static final String DATE_FORMATTER = "yyyy년 MM월 dd일 HH시 mm분 ss초";
 
     // 디폴트 생성자
     public Sudoku(StringProperty problem) {
@@ -27,7 +30,9 @@ public class Sudoku {
 
     // 데이터를 초기화하는 생성자
     public Sudoku(int id, LocalDateTime startTime, LocalDateTime endTime, int spentTime, String problem, String answer) {
-        this.startTime = new SimpleObjectProperty(startTime);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMATTER);
+        String formatStartTime = startTime.format(formatter);
+        this.startTime = new SimpleStringProperty(formatStartTime);
         this.spentTime = new SimpleIntegerProperty(spentTime);
 
         // 테스트를 위해 초기화하는 더미 데이터
@@ -36,18 +41,29 @@ public class Sudoku {
         this.problem = new SimpleStringProperty(problem);
     }
 
-
-    public LocalDateTime getStartTime() {
+    public String getStartTime() {
         return startTime.get();
     }
 
-    public ObjectProperty<LocalDateTime> startTimeProperty() {
+    public StringProperty startTimeProperty() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(String startTime) {
         this.startTime.set(startTime);
     }
+
+    //    public LocalDateTime getStartTime() {
+//        return startTime.get();
+//    }
+//
+//    public ObjectProperty<LocalDateTime> startTimeProperty() {
+//        return startTime;
+//    }
+//
+//    public void setStartTime(LocalDateTime startTime) {
+//        this.startTime.set(startTime);
+//    }
 
     public LocalDateTime getEndTime() {
         return endTime.get();

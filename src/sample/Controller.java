@@ -26,7 +26,7 @@ public class Controller implements Initializable {
     @FXML private Button btn_answer;
     @FXML private Label timer_label;
     @FXML private TableView<Sudoku> sudokuTable;
-    @FXML private TableColumn<Sudoku, LocalDateTime> startTimeColumn;
+    @FXML private TableColumn<Sudoku, String> startTimeColumn;
     @FXML private TableColumn<Sudoku, Integer> spentTimeColumn;
 
 
