@@ -16,7 +16,7 @@
    <children>
       <VBox fx:id="vb_main" layoutX="135.0" layoutY="88.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <HBox fx:id="hb_head" prefHeight="50.0" prefWidth="200.0" spacing="10.0">
+            <HBox fx:id="hb_head" alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="1000.0" spacing="10.0">
                <children>
                   <Label fx:id="timer_label" alignment="CENTER" text="0">
                      <HBox.margin>
@@ -38,6 +38,11 @@
                      <HBox.margin>
                         <Insets top="2.0" />
                      </HBox.margin></Button>
+                  <HBox alignment="CENTER_RIGHT" prefHeight="25.0" prefWidth="594.0">
+                     <children>
+                        <Button fx:id="btn_changenickname" alignment="TOP_RIGHT" contentDisplay="CENTER" mnemonicParsing="false" onAction="#getNickname" style="-fx-background-color: pink;" text="Change Nickname" />
+                     </children>
+                  </HBox>
                </children>
                <padding>
                   <Insets left="30.0" />
@@ -78,7 +83,7 @@
                             <TableColumn fx:id="spentTimeColumn" maxWidth="120.0" minWidth="0.0" prefWidth="120.0" text="Spent Time" />
                           </columns>
                            <VBox.margin>
-                              <Insets left="10.0" />
+                              <Insets left="10.0" top="5.0" />
                            </VBox.margin>
                         </TableView>
                         <Button fx:id="btn_delete" alignment="TOP_RIGHT" contentDisplay="CENTER" mnemonicParsing="false" onAction="#handleDeleteSudoku" text="Delete">

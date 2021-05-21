@@ -3,12 +3,10 @@ package sample;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.beans.property.IntegerProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
@@ -26,6 +24,7 @@ public class Controller implements Initializable {
     @FXML private Button btn_confirm;
     @FXML private Button btn_answer;
     @FXML private Button btn_delete;
+    @FXML private Button btn_changenickname;
     @FXML private Label timer_label;
     @FXML private TableView<Sudoku> sudokuTable;
     @FXML private TableColumn<Sudoku, String> nicknameColumn;
@@ -735,11 +734,19 @@ public class Controller implements Initializable {
         }
     }
 
+    @FXML
     private void getNickname() {
         // 닉네임 받기;
-        TextInputDialog dialog = new TextInputDialog("");
+        TextInputDialog dialog;
+        if (nickname != null) {
+            dialog = new TextInputDialog(nickname);
+        } else {
+            dialog = new TextInputDialog("");
+        }
+
         dialog.setTitle("닉네임 입력");
         dialog.setHeaderText("닉네임을 입력해주세요.");
+        
 
         // 입력 취소는 disable
         dialog.getDialogPane().lookupButton(ButtonType.CANCEL).setDisable(true);
