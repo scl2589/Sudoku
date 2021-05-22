@@ -16,31 +16,52 @@
    <children>
       <VBox fx:id="vb_main" layoutX="135.0" layoutY="88.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <HBox fx:id="hb_head" alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="1000.0" spacing="10.0">
+            <HBox fx:id="hb_head" alignment="CENTER_LEFT" prefHeight="25.0" prefWidth="490.0" spacing="10.0">
                <children>
-                  <Label fx:id="timer_label" alignment="CENTER" text="0">
-                     <HBox.margin>
-                        <Insets right="100.0" />
-                     </HBox.margin>
-                     <padding>
-                        <Insets top="5.0" />
-                     </padding>
-                  </Label>
-                  <Button fx:id="btn_generate" mnemonicParsing="false" onAction="#handleGenerate" style="-fx-background-color: #f38181;" text="Generate">
-                     <HBox.margin>
-                        <Insets top="2.0" />
-                     </HBox.margin></Button>
-                  <Button fx:id="btn_confirm" mnemonicParsing="false" onAction="#handleConfirm" style="-fx-background-color: #fce38a;" text="Confirmation">
-                     <HBox.margin>
-                        <Insets top="2.0" />
-                     </HBox.margin></Button>
-                  <Button fx:id="btn_answer" mnemonicParsing="false" onAction="#handleAnswer" style="-fx-background-color: #95e1d3;" text="Answer">
-                     <HBox.margin>
-                        <Insets top="2.0" />
-                     </HBox.margin></Button>
-                  <HBox alignment="CENTER_RIGHT" prefHeight="25.0" prefWidth="594.0">
+                  <HBox prefHeight="100.0" prefWidth="200.0">
                      <children>
-                        <Button fx:id="btn_changenickname" alignment="TOP_RIGHT" contentDisplay="CENTER" mnemonicParsing="false" onAction="#getNickname" style="-fx-background-color: pink;" text="Change Nickname" />
+                        <Label fx:id="timer_label" alignment="CENTER" text="0">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                           <padding>
+                              <Insets top="5.0" />
+                           </padding>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <HBox prefHeight="25.0" prefWidth="398.0">
+                     <children>
+                        <Button fx:id="btn_generate" mnemonicParsing="false" onAction="#handleGenerate" style="-fx-background-color: #f38181;" text="Generate">
+                           <HBox.margin>
+                              <Insets top="2.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="btn_confirm" mnemonicParsing="false" onAction="#handleConfirm" style="-fx-background-color: #fce38a;" text="Confirmation">
+                           <HBox.margin>
+                              <Insets left="10.0" top="2.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="btn_answer" mnemonicParsing="false" onAction="#handleAnswer" style="-fx-background-color: #95e1d3;" text="Answer">
+                           <HBox.margin>
+                              <Insets left="10.0" top="2.0" />
+                           </HBox.margin>
+                        </Button>
+                     </children>
+                  </HBox>
+                  <HBox prefHeight="25.0" prefWidth="58.0" HBox.hgrow="ALWAYS" />
+                  <HBox>
+                     <children>
+                        <Button fx:id="btn_changenickname" alignment="TOP_CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#getNickname" style="-fx-background-color: pink;" text="Change Nickname">
+                           <HBox.margin>
+                              <Insets right="10.0" top="2.0" />
+                           </HBox.margin>
+                        </Button>
+                        <Button fx:id="btn_delete" alignment="CENTER" contentDisplay="RIGHT" mnemonicParsing="false" onAction="#handleDeleteSudoku" text="Delete">
+                           <HBox.margin>
+                              <Insets right="10.0" top="2.0" />
+                           </HBox.margin>
+                        </Button>
                      </children>
                   </HBox>
                </children>
@@ -48,9 +69,9 @@
                   <Insets left="30.0" />
                </padding>
             </HBox>
-            <HBox prefHeight="550.0" prefWidth="200.0">
+            <HBox prefHeight="550.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                <children>
-                  <GridPane fx:id="gp_sudoku_pane" alignment="CENTER" maxWidth="500.0" prefHeight="191.0" prefWidth="514.0">
+                  <GridPane fx:id="gp_sudoku_pane" alignment="CENTER" prefHeight="191.0" prefWidth="514.0" HBox.hgrow="ALWAYS">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -73,24 +94,22 @@
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
+                     <HBox.margin>
+                        <Insets bottom="10.0" left="10.0" right="5.0" top="5.0" />
+                     </HBox.margin>
                   </GridPane>
-                  <VBox maxHeight="500.0" maxWidth="500.0" prefHeight="500.0" prefWidth="500.0">
+                  <VBox prefHeight="500.0" prefWidth="500.0" HBox.hgrow="ALWAYS">
                      <children>
-                        <TableView fx:id="sudokuTable" maxHeight="500.0" maxWidth="500.0" prefHeight="500.0" prefWidth="400.0">
+                        <TableView fx:id="sudokuTable" prefWidth="400.0" VBox.vgrow="ALWAYS">
                           <columns>
-                              <TableColumn fx:id="nicknameColumn" maxWidth="150.0" prefWidth="150.0" text="Nickname" />
-                            <TableColumn fx:id="startTimeColumn" maxWidth="220.0" prefWidth="220.0" text="Start Date" />
-                            <TableColumn fx:id="spentTimeColumn" maxWidth="120.0" minWidth="0.0" prefWidth="120.0" text="Spent Time" />
+                              <TableColumn fx:id="nicknameColumn" maxWidth="152.0" prefWidth="116.0" resizable="false" text="Nickname" />
+                            <TableColumn fx:id="startTimeColumn" maxWidth="239.0" minWidth="47.0" prefWidth="222.0" resizable="false" text="Start Date" />
+                            <TableColumn fx:id="spentTimeColumn" maxWidth="220.0" minWidth="4.0" prefWidth="127.0" resizable="false" text="Spent Time" />
                           </columns>
                            <VBox.margin>
-                              <Insets left="10.0" top="5.0" />
+                              <Insets bottom="10.0" left="5.0" right="10.0" top="5.0" />
                            </VBox.margin>
                         </TableView>
-                        <Button fx:id="btn_delete" alignment="TOP_RIGHT" contentDisplay="CENTER" mnemonicParsing="false" onAction="#handleDeleteSudoku" text="Delete">
-                           <VBox.margin>
-                              <Insets left="330.0" top="10.0" />
-                           </VBox.margin>
-                        </Button>
                      </children>
                   </VBox>
                </children>
