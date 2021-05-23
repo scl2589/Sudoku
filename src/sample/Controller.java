@@ -3,6 +3,7 @@ package sample;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -15,6 +16,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.*;
 
+import static java.lang.Long.MAX_VALUE;
 import static javafx.scene.control.ButtonType.OK;
 
 public class Controller implements Initializable {
@@ -62,7 +64,7 @@ public class Controller implements Initializable {
                 TextField tf = new TextField("");
 
                 // text field 의 크기와 정렬 조정
-                tf.setPrefSize(50, 55);
+                tf.setPrefSize(MAX_VALUE, MAX_VALUE);
                 tf.setAlignment(Pos.CENTER);
 
                 // sudoku 처럼 보이기 위해 각 row/col 값을 계산해 outline 생성
@@ -168,7 +170,13 @@ public class Controller implements Initializable {
             alert = createAlert("warning", null, "Sudoku 게임 미시작", "Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 정답을 확인하기 위해 눌러주세요.");
         } else {
             alert = createAlert("information", "Sudoku 게임 정답", "Sudoku 게임 정답입니다.", null);
-
+            StringBuilder sudokuAnswer = new StringBuilder();
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    sudokuAnswer.append(answer.get(i).get(j)).append(" ");
+                }
+                sudokuAnswer.append("\n");
+            }
             alert.setContentText(sudokuAnswer.toString());
         }
         alert.showAndWait();
@@ -425,7 +433,7 @@ public class Controller implements Initializable {
 
         }
 
-        if (removedArr.size()>= 2) {
+        if (removedArr.size()>= 10) {
             // Sudoku 문제를 String 형태로 변환하기
             question = new StringBuilder();
             for (int i = 0; i < 9; i++) {
@@ -637,6 +645,7 @@ public class Controller implements Initializable {
         startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
         spentTimeColumn.setCellValueFactory(cellData -> cellData.getValue().spentTimeProperty().asObject());
 
+        // 각각의 row마다 선택된 아이템에 대해 event listener 추가하기
         sudokuTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showSudokuGame(newValue));
 
