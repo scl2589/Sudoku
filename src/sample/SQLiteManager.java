@@ -132,31 +132,6 @@ public class SQLiteManager {
         }
     }
 
-
-    // 데이터 조회 메소드
-    public void selectSudokuList() {
-        String sql = "SELECT * FROM sudoku";
-
-        try (Connection conn = createConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String nickname = rs.getString("nickname");
-                int spent_time = rs.getInt("spent_time");
-                String problem = rs.getString("problem");
-                String answer = rs.getString("answer");
-                LocalDateTime start_time = rs.getTimestamp("start_time").toLocalDateTime();
-                LocalDateTime end_time = rs.getTimestamp("end_time").toLocalDateTime();
-                sudokuData.add(new Sudoku(id, nickname, start_time, end_time, spent_time, problem, answer));
-            }
-        } catch (SQLException e) {
-            e.getMessage();
-        } finally {
-            closeConnection();
-        }
-    }
-
     public ObservableList<Sudoku> getSudokuData() {
         return sudokuData;
     }

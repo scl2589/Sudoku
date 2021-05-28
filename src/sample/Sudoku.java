@@ -16,7 +16,7 @@ public class Sudoku {
     private final IntegerProperty id;
     private final StringProperty nickname;
     private final StringProperty startTime;
-    private final ObjectProperty<LocalDateTime> endTime;
+    private final StringProperty endTime;
     private final IntegerProperty spentTime;
     private final StringProperty answer;
     private final StringProperty problem;
@@ -29,19 +29,25 @@ public class Sudoku {
     }
 
     // 데이터를 초기화하는 생성자
-    public Sudoku(int id, String nickname, LocalDateTime startTime, LocalDateTime endTime, int spentTime, String problem, String answer) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMATTER);
-        String formatStartTime = startTime.format(formatter);
+    public Sudoku(int id, String nickname, String startTime, String endTime, int spentTime, String problem, String answer) {
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMATTER);
+//        String formatStartTime = startTime.format(formatter);
 
         this.id = new SimpleIntegerProperty(id);
         this.nickname = new SimpleStringProperty(nickname);
-        this.startTime = new SimpleStringProperty(formatStartTime);
+//        this.startTime = new SimpleStringProperty(formatStartTime);
+        this.startTime = new SimpleStringProperty(startTime);
         this.spentTime = new SimpleIntegerProperty(spentTime);
 
         // 테스트를 위해 초기화하는 더미 데이터
-        this.endTime = new SimpleObjectProperty<LocalDateTime>(endTime);
+        this.endTime = new SimpleStringProperty(endTime);
+//        this.endTime = new SimpleObjectProperty<LocalDateTime>(endTime);
         this.answer = new SimpleStringProperty(answer);
         this.problem = new SimpleStringProperty(problem);
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime.set(endTime);
     }
 
     public String getNickname() {
@@ -70,18 +76,6 @@ public class Sudoku {
 
     public void setStartTime(String startTime) {
         this.startTime.set(startTime);
-    }
-
-    public LocalDateTime getEndTime() {
-        return endTime.get();
-    }
-
-    public ObjectProperty<LocalDateTime> endTimeProperty() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime.set(endTime);
     }
 
     public int getSpentTime() {

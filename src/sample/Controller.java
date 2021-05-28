@@ -1,8 +1,14 @@
 package sample;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.deploy.net.HttpRequest;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -11,9 +17,20 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
+import jdk.nashorn.internal.parser.JSONParser;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 
 import static java.lang.Long.MAX_VALUE;
@@ -55,6 +72,8 @@ public class Controller implements Initializable {
     HashSet<Integer>[] checkCols = new HashSet[9];
     HashSet<Integer>[] checkBox = new HashSet[9];
 
+    private ObservableList<Sudoku> sudokuData = FXCollections.observableArrayList();
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         arr = new ArrayList<>(9);
@@ -94,7 +113,13 @@ public class Controller implements Initializable {
         }
         timer_label.setStyle("-fx-font-size: 1.5em;");
 
-        initializeTable();
+        try {
+            initializeTable();
+        } catch (JsonMappingException e) {
+            System.out.println(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //닉네임 받기
         getNickname();
@@ -106,15 +131,15 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    public void handleConfirm() throws SQLException {
-        // 아직 게임이 생성되지 않았을 경우 
+    public void handleConfirm() throws Exception, JsonMappingException {
+        // 아직 게임이 생성되지 않았을 경우
         if (answer == null) {
             Alert alert = createAlert("warning", null, "Sudoku 게임 미시작", "Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 게임 결과를 확인하기 위해 눌러주세요.");
             alert.showAndWait();
         } else { // 게임이 생성된 경우
             // 정답일 경우
             if (correct()) {
-                // 타이머 중지 
+                // 타이머 중지
                 timeline.stop();
 
                 // 게임이 끝났으므로 게임 끝난 시각 저장
@@ -137,11 +162,11 @@ public class Controller implements Initializable {
                 // alert 창 생성
                 Alert alert = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.", "정답입니다!! 축하합니다 :) \n게임 소요 시간은 총 " + count + "초 입니다." );
 
-                // 새 게임 시작하기 버튼 생성 
+                // 새 게임 시작하기 버튼 생성
                 ButtonType buttonNewGame = new ButtonType("새 게임 시작하기");
                 alert.getButtonTypes().setAll(buttonNewGame, OK);
 
-                // 사용자가 어떤 버튼을 눌렀는지 결과값 받아오기 
+                // 사용자가 어떤 버튼을 눌렀는지 결과값 받아오기
                 Optional<ButtonType> result = alert.showAndWait();
 
                 if (result.get() == buttonNewGame) { // 새 게임 시작
@@ -151,7 +176,7 @@ public class Controller implements Initializable {
                     timer_label.setText(Integer.toString(0));
                     // 새 게임을 생성한다
                     generateRandom();
-                } else if (result.get() == OK) { // 확인버튼 
+                } else if (result.get() == OK) { // 확인버튼
                     alert.hide();
                 }
 
@@ -637,7 +662,7 @@ public class Controller implements Initializable {
         manager.insertGameData(params);
     }
 
-    private void initializeTable() {
+    private void initializeTable() throws Exception, JsonMappingException {
         // 테이블 초기화하기
         sudokuTable.getItems().clear();
 
@@ -650,8 +675,26 @@ public class Controller implements Initializable {
                 (observable, oldValue, newValue) -> showSudokuGame(newValue));
 
         // 테이블에 observable 리스트 데이터를 추가한다.
-        manager.selectSudokuList();
-        sudokuTable.setItems(manager.getSudokuData());
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet("http://localhost:8080/initializetable");
+        CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
+        HttpEntity entity = httpResponse.getEntity();
+        String content = EntityUtils.toString(entity, "UTF-8");
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode nodes = mapper.readTree(content);
+        for (JsonNode node : nodes) {
+            int id = node.get("id").asInt();
+            String nickname = node.get("nickname").asText();
+            int spent_time = node.get("spent_time").asInt();
+            String problem = node.get("problem").asText();
+            String answer = node.get("answer").asText();
+            String start_time =node.get("start_time").asText();
+            String end_time = node.get("end_time").asText();
+            sudokuData.add(new Sudoku(id, nickname, start_time, end_time, spent_time, problem, answer));
+        }
+
+        sudokuTable.setItems(sudokuData);
     }
 
 
@@ -755,7 +798,7 @@ public class Controller implements Initializable {
 
         dialog.setTitle("닉네임 입력");
         dialog.setHeaderText("닉네임을 입력해주세요.");
-        
+
 
         // 입력 취소는 disable
         dialog.getDialogPane().lookupButton(ButtonType.CANCEL).setDisable(true);
