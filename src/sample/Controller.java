@@ -3,13 +3,11 @@ package sample;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.deploy.net.HttpRequest;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -17,7 +15,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -28,9 +25,6 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 
 import static java.lang.Long.MAX_VALUE;
@@ -52,8 +46,6 @@ public class Controller implements Initializable {
 
     private String nickname;
     private ArrayList<ArrayList<TextField>> arr;
-    private ArrayList<Integer> removedArr;
-    private ArrayList<Integer> allElements;
     private ArrayList<ArrayList<Integer>> answer;
     private StringBuilder question;
 
@@ -126,7 +118,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    public void handleGenerate() {
+    public void handleGenerate() throws IOException {
         generateRandom();
     }
 
@@ -225,206 +217,61 @@ public class Controller implements Initializable {
     /*
      * Generate 버튼 이벤트 생성하기
      */
-    private void generateRandom(){
+    private void generateRandom() throws IOException {
         // 문제를 생성했으므로 시간을 측정하기 시작한다.
         timing();
 
-        // 초기화한다.
-        removedArr = new ArrayList<>();
-        allElements = new ArrayList<>();
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet("http://localhost:8080/generate");
+        CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
+        HttpEntity entity = httpResponse.getEntity();
+        String content = EntityUtils.toString(entity, "UTF-8");
 
-        for (int i = 0; i < 81; i++) {
-            allElements.add(i);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode nodes = mapper.readTree(content);
+
+        // Answer 버튼을 위해 정답 배열을 만들어서 완성된 스도쿠를 담아둔다.
+        answer = new ArrayList<>(9);
+        for (JsonNode node : nodes) {
+            ArrayList<Integer> temp = new ArrayList<>(9);
+            for (int j = 0; j < 9; j++) {
+                int value = node.get(j).asInt();
+                temp.add(value);
+            }
+            answer.add(temp);
         }
 
-        // sudoku board에 있는 값 초기화 (generate 버튼을 여러 번 눌렀을 때에 sudoku board를 비워야 한다.)
+        for (ArrayList<Integer> h : answer) {
+            System.out.println(h);
+        }
+
+        // 스도쿠 문제를 생성하기 위해 완성된 스도쿠의 element를 하나씩 지운다.
+        httpGet = new HttpGet("http://localhost:8080/generate/remove");
+        httpResponse = httpClient.execute(httpGet);
+        entity = httpResponse.getEntity();
+        content = EntityUtils.toString(entity, "UTF-8");
+        mapper = new ObjectMapper();
+        nodes = mapper.readTree(content);
+
+        // 문제 저장하기
+        question = new StringBuilder();
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                TextField current = arr.get(i).get(j);
-                current.setText("");
-                current.setEditable(true);
-            }
-        }
-        for (int i = 0; i < 9; i++ ) {
-            rows[i] = new HashSet<>();
-            cols[i] = new HashSet<>();
-            box[i] = new HashSet<>();
-        }
-
-        // 스도쿠 완성하기 (top 3 rows and 1st column)
-        generateTopLeftBox();
-        generateFirstRow();
-        generateTopMiddleBox();
-        generateTopRightBox();
-        generateFirstCol();
-
-        // 백트래킹으로 스도쿠 완성
-        // 만약 스도쿠가 완성되지 않는다면?
-        if (!backtracking()) {
-            Alert alert = createAlert("warning", null, "Sudoku 게임 생성 오류", "게임 생성에 오류가 발생했습니다. \nGenerate 버튼을 다시 한 번 눌러주세요.");
-            alert.showAndWait();
-        } else { // 스도쿠가 완성될 경우?
-            // Answer 버튼을 위해 정답 배열을 만들어서 담아둔다.
-            answer = new ArrayList<>(9);
-            for (int i = 0; i < 9; i++) {
-                ArrayList<Integer> temp = new ArrayList<>(9);
-                for (int j = 0; j < 9; j++) {
-                    Integer value = Integer.parseInt(arr.get(i).get(j).getText());
-                    temp.add(value);
+                String value = nodes.get(i).get(j).toString();
+                if ("0".equals(value)) {
+                    question.append("_ ");
+                } else {
+                    question.append(value).append(" ");
+                    arr.get(i).get(j).setText(value);
                 }
-                answer.add(temp);
             }
-            // 스도쿠 문제를 생성하기 위해 element를 하나씩 지운다.
-            removeElement();
-
-            // 게임이 시작됐으므로 현재 시간을 저장해놓는다.
-            start_time = new Date();
+            question.append("\n");
         }
+        setTextFieldStyle();
+        // 게임이 시작됐으므로 현재 시간을 저장해놓는다.
+        start_time = new Date();
     }
 
-    private void generateTopLeftBox() {
-        // 좌상단 박스 생성하기
-        ArrayList<Integer> numbers = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-        Collections.shuffle(numbers);
-        for (int k = 0; k < 9; k++) {
-            int i = k / 3, j = k % 3;
-            arr.get(i).get(j).setText(Integer.toString(numbers.get(k)));
-
-            // set 에 추가한다.
-            rows[i].add(numbers.get(k));
-            cols[j].add(numbers.get(k));
-            box[0].add(numbers.get(k));
-        }
-    }
-
-
-
-    private void generateFirstRow() {
-        // 첫번째 col 생성하기
-        ArrayList<Integer> firstRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-        for (Integer e : rows[0]) {
-            firstRowAvailable.remove(e);
-        }
-        Collections.shuffle(firstRowAvailable);
-
-        for (int j = 3; j < 9; j++) {
-            // text 추가한다.
-            arr.get(0).get(j).setText(Integer.toString(firstRowAvailable.get(j - 3)));
-            // HashSet에 저장해준다.
-            rows[0].add(firstRowAvailable.get(j-3));
-            cols[j].add(firstRowAvailable.get(j-3));
-            int ij = j / 3;
-            box[ij].add(firstRowAvailable.get(j-3));
-        }
-    }
-
-    private void generateTopMiddleBox() {
-        // 중앙 상단 박스 생성하기
-        // 가능한 숫자 나열
-        ArrayList<Integer> middleSecondRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-
-        // 중앙 박스에 이미 있는 요소들 제거
-        for (Integer e : box[1]) {
-            middleSecondRowAvailable.remove(e);
-        }
-        // 2번째 row에 있는 요소들 제거
-        for (Integer e : rows[1]) {
-            middleSecondRowAvailable.remove(e);
-        }
-
-        // 2번째 row에 필수적으로 있어야 하는 값 확인
-        ArrayList<Integer> mustBeInMiddleSecondRow = new ArrayList<>();
-        // 3번째 row에 숫자가 있어서 2번째 row에 필수적으로 들어가야 하는 값 추가
-        for (Integer e: rows[2]) {
-            if (middleSecondRowAvailable.contains(e)) {
-                mustBeInMiddleSecondRow.add(e);
-                middleSecondRowAvailable.remove(e);
-            }
-        }
-
-        List<Integer> middleSecondRowValues = getNumbers(middleSecondRowAvailable, 3 - mustBeInMiddleSecondRow.size());
-        middleSecondRowValues.addAll(mustBeInMiddleSecondRow);
-        Collections.shuffle(middleSecondRowValues);
-
-        for (int j = 3; j < 6; j++) {
-            arr.get(1).get(j).setText(Integer.toString(middleSecondRowValues.get(j - 3)));
-            // HashSet에 저장해준다.
-            rows[1].add(middleSecondRowValues.get(j-3));
-            cols[j].add(middleSecondRowValues.get(j-3));
-            box[1].add(middleSecondRowValues.get(j-3));
-        }
-
-        // 마지막 세번째 줄 추가하기
-        ArrayList<Integer> middleThirdRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-        // 중앙 박스에 이미 있는 요소들 제거
-        for (Integer e : box[1]) {
-            middleThirdRowAvailable.remove(e);
-        }
-        Collections.shuffle(middleSecondRowValues);
-
-        // Text 추가하기
-        for (int j = 3; j < 6; j++) {
-            // text 추가한다.
-            arr.get(2).get(j).setText(Integer.toString(middleThirdRowAvailable.get(j - 3)));
-            // HashSet에 저장해준다.
-            rows[2].add(middleThirdRowAvailable.get(j-3));
-            cols[j].add(middleThirdRowAvailable.get(j-3));
-            box[1].add(middleThirdRowAvailable.get(j-3));
-        }
-    }
-
-    private void generateTopRightBox() {
-        ArrayList<Integer> rightSecondRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-        ArrayList<Integer> rightThirdRowAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-
-        // 2번째 row에 있는 요소들 제거
-        for (Integer e : rows[1]) {
-            rightSecondRowAvailable.remove(e);
-        }
-        // 3번째 row에 있는 요소들 제거
-        for (Integer e : rows[2]) {
-            rightThirdRowAvailable.remove(e);
-        }
-
-        Collections.shuffle(rightSecondRowAvailable);
-        Collections.shuffle(rightThirdRowAvailable);
-
-        // Text 추가하기
-        for (int j = 6; j < 9; j++) {
-            // text 추가한다.
-            arr.get(1).get(j).setText(Integer.toString(rightSecondRowAvailable.get(j - 6)));
-            arr.get(2).get(j).setText(Integer.toString(rightThirdRowAvailable.get(j - 6)));
-            // HashSet에 저장해준다.
-            rows[1].add(rightSecondRowAvailable.get(j-6));
-            rows[2].add(rightThirdRowAvailable.get(j-6));
-
-            cols[j].add(rightSecondRowAvailable.get(j-6));
-            cols[j].add(rightThirdRowAvailable.get(j-6));
-
-            box[2].add(rightSecondRowAvailable.get(j-6));
-            box[2].add(rightThirdRowAvailable.get(j-6));
-        }
-    }
-
-    private void generateFirstCol() {
-        ArrayList<Integer> firstColAvailable = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-
-        // 첫번째 column에 있는 요소들 제거
-        for (Integer e : cols[0]) {
-            firstColAvailable.remove(e);
-        }
-
-        Collections.shuffle(firstColAvailable);
-
-        for (int i = 3; i < 9; i++) {
-            arr.get(i).get(0).setText(Integer.toString(firstColAvailable.get(i-3)));
-
-            rows[i].add(firstColAvailable.get(i-3));
-            cols[0].add(firstColAvailable.get(i-3));
-            int ij = (i / 3) * 3 ;
-            box[ij].add(firstColAvailable.get(i-3));
-        }
-    }
 
     private List<Integer> getNumbers(ArrayList<Integer> list, int totalItems ) {
         Random rand = new Random();
@@ -435,104 +282,6 @@ public class Controller implements Initializable {
             list.remove(randomIndex);
         }
         return returnList;
-    }
-
-    private void removeElement() {
-        // 삭제할 element를 랜덤으로 구하고, removedArr 리스트에 추가한다.
-        int removeNum = getNumbers(allElements, 1).get(0);
-        removedArr.add(removeNum);
-
-        // 없앤 숫자를 allElements 에서 삭제한다.
-//        allElements.remove(allElements.indexOf(removeNum)); -> 이게 안되는 이유??
-        allElements.remove(new Integer(removeNum));
-
-        // 없애야 할 숫자를 board에서 삭제한다.
-        for (Integer e: removedArr) {
-            int i = e / 9; int j = e % 9;
-            int value = Integer.parseInt(arr.get(i).get(j).getText());
-            rows[i].remove(value);
-            cols[j].remove(value);
-            int ij = (i / 3) * 3 + j / 3;
-            box[ij].remove(value);
-            arr.get(i).get(j).setText("");
-
-        }
-
-        if (removedArr.size()>= 10) {
-            // Sudoku 문제를 String 형태로 변환하기
-            question = new StringBuilder();
-            for (int i = 0; i < 9; i++) {
-                for (int j = 0; j < 9; j++) {
-                    String value = arr.get(i).get(j).getText();
-                    if ("".equals(value)) {
-                        question.append("_ ");
-                    } else {
-                        question.append(value).append(" ");
-                    }
-                }
-                question.append("\n");
-            }
-            setTextFieldStyle();
-        } else{
-            if (backtracking()) {
-                removeElement();
-            }
-        }
-    }
-
-    private boolean backtracking() {
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                // 만약 해당 위치에 숫자가 있다면 패스
-                if (!arr.get(i).get(j).getText().equals("")) continue;
-                // 비어 있는 경우라면 해당 위치에 어떤 값이 들어갈 수 있는지 확인
-                ArrayList<Integer> available = validValues(i, j);
-                // 각각의 value를 넣고 가능한지 확인한다.
-                for (Integer k : available) {
-                    arr.get(i).get(j).setText(Integer.toString(k));
-                    rows[i].add(k);
-                    cols[j].add(k);
-                    int ij = (i / 3) * 3 + j / 3;
-                    box[ij].add(k);
-
-                    if (backtracking()) {
-                        return true;
-                    }
-                    else {
-                        arr.get(i).get(j).setText("");
-                        rows[i].remove(k);
-                        cols[j].remove(k);
-                        box[ij].remove(k);
-                    }
-                }
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private ArrayList<Integer> validValues(int i, int j) {
-        // 가능한 값들 선언
-        ArrayList<Integer> available = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
-
-        // 가로에 있는 값들을 다 제거한다.
-        for (Integer e : rows[i]) {
-            available.remove(e);
-        }
-
-        // 세로에 있는 값들을 다 제거한다.
-        for (Integer e: cols[j]) {
-            available.remove(e);
-        }
-
-        // 박스 값을 고려하며 박스 값 제거한다.
-        int ij = (i / 3) * 3 + j / 3;
-
-        for (Integer e: box[ij]) {
-            available.remove(e);
-        }
-
-        return available;
     }
 
     private Boolean correct() {
