@@ -3,6 +3,7 @@ package sample;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.deploy.net.HttpRequest;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -18,13 +19,17 @@ import javafx.util.Duration;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.sql.SQLException;
+import java.sql.SQLOutput;
 import java.util.*;
 
 import static java.lang.Long.MAX_VALUE;
@@ -129,8 +134,25 @@ public class Controller implements Initializable {
             Alert alert = createAlert("warning", null, "Sudoku 게임 미시작", "Sudoku 게임을 아직 시작하지 않았습니다. \n게임 생성 후, 게임 결과를 확인하기 위해 눌러주세요.");
             alert.showAndWait();
         } else { // 게임이 생성된 경우
-            // 정답일 경우
-            if (correct()) {
+            // 현재 값 String에 담아두기
+            StringBuilder currentValue = new StringBuilder();
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    if ("".equals(arr.get(i).get(j).getText())) {
+                        currentValue.append("0");
+                    } else {
+                        currentValue.append(arr.get(i).get(j).getText());
+                    }
+                }
+            }
+
+            //정답인지 확인하기
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            HttpGet httpGet = new HttpGet("http://localhost:8080/correct/" +currentValue.toString());
+            CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
+            HttpEntity entity = httpResponse.getEntity();
+            Boolean content = Boolean.parseBoolean(EntityUtils.toString(entity, "UTF-8"));
+            if (content == true) { // 정답일 경우
                 // 타이머 중지
                 timeline.stop();
 
@@ -145,9 +167,9 @@ public class Controller implements Initializable {
                     }
                     sudokuAnswer.append("\n");
                 }
-                // DB에 데이터 추가
-                insertData(nickname, start_time, end_time, count, sudokuAnswer.toString(), question.toString());
-
+//                // DB에 데이터 추가
+//                insertData(nickname, start_time, end_time, count, sudokuAnswer.toString(), question.toString());
+//
                 // TableView 갱신하기
                 initializeTable();
 
@@ -166,12 +188,12 @@ public class Controller implements Initializable {
                     // 시간을 0으로 초기화
                     count = 0;
                     timer_label.setText(Integer.toString(0));
+
                     // 새 게임을 생성한다
                     generateRandom();
                 } else if (result.get() == OK) { // 확인버튼
                     alert.hide();
                 }
-
             } else { // 정답이 아닐 경우
                 // alert 창 생성
                 Alert alert  = createAlert("information", "Sudoku 게임 결과", "Sudoku 게임 결과입니다.","정답이 아닙니다. 다시 한 번 시도해보세요 :)"  );
@@ -221,6 +243,14 @@ public class Controller implements Initializable {
         // 문제를 생성했으므로 시간을 측정하기 시작한다.
         timing();
 
+        // 초기화하기
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                arr.get(i).get(j).setText("");
+            }
+        }
+
+
         CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet("http://localhost:8080/generate");
         CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
@@ -260,6 +290,7 @@ public class Controller implements Initializable {
                 String value = nodes.get(i).get(j).toString();
                 if ("0".equals(value)) {
                     question.append("_ ");
+                    arr.get(i).get(j).setText("");
                 } else {
                     question.append(value).append(" ");
                     arr.get(i).get(j).setText(value);
@@ -357,6 +388,7 @@ public class Controller implements Initializable {
                         current.setStyle("-fx-text-fill:gray");
                     }
                 } else {
+                    current.setEditable(true);
                     if (i % 3 == 2 && j % 3 == 2) {
                         current.setStyle("-fx-border-width: 0 2 2 0; -fx-border-color: #364f6b;-fx-text-fill:black");
                     } else if (i == 0 && j == 0) {
