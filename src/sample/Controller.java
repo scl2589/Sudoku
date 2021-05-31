@@ -3,6 +3,7 @@ package sample;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.deploy.net.HttpRequest;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -17,12 +18,17 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -30,6 +36,8 @@ import java.net.URI;
 import java.net.URL;
 import java.sql.SQLException;
 import java.sql.SQLOutput;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static java.lang.Long.MAX_VALUE;
@@ -167,9 +175,31 @@ public class Controller implements Initializable {
                     }
                     sudokuAnswer.append("\n");
                 }
-//                // DB에 데이터 추가
-//                insertData(nickname, start_time, end_time, count, sudokuAnswer.toString(), question.toString());
-//
+
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh-mm-ss");
+
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode postParam = mapper.createObjectNode();
+                postParam.put("nickname", nickname);
+                postParam.put("starttime", df.format(start_time));
+                postParam.put("endtime", df.format(end_time));
+                postParam.put("count", count);
+                postParam.put("answer", sudokuAnswer.toString());
+                postParam.put("question", question.toString());
+                String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(postParam);
+
+                System.out.println(df.format(start_time));
+                System.out.println(df.format(end_time));
+
+
+
+                // DB에 데이터 추가하기
+                HttpPost httpPost = new HttpPost("http://localhost:8080/sudoku/");
+                httpPost.addHeader("accept", "application/json");
+                httpPost.addHeader("Content-Type", "application/json");
+                httpPost.setEntity(new StringEntity(json));
+                httpResponse = httpClient.execute(httpPost);
+
                 // TableView 갱신하기
                 initializeTable();
 
