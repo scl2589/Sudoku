@@ -20,10 +20,7 @@ import javafx.util.Duration;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -188,17 +185,12 @@ public class Controller implements Initializable {
                 postParam.put("question", question.toString());
                 String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(postParam);
 
-                System.out.println(df.format(start_time));
-                System.out.println(df.format(end_time));
-
-
-
                 // DB에 데이터 추가하기
                 HttpPost httpPost = new HttpPost("http://localhost:8080/sudoku/");
                 httpPost.addHeader("accept", "application/json");
                 httpPost.addHeader("Content-Type", "application/json");
                 httpPost.setEntity(new StringEntity(json));
-                httpResponse = httpClient.execute(httpPost);
+                httpClient.execute(httpPost);
 
                 // TableView 갱신하기
                 initializeTable();
@@ -584,12 +576,15 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void handleDeleteSudoku() {
+    private void handleDeleteSudoku() throws Exception {
         int selectedIndex = sudokuTable.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0) {
             int selectedDBIndex = sudokuTable.getSelectionModel().getSelectedItem().getId().getValue().intValue();
+            // Delete Http 통신 진행
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            HttpDelete httpDelete = new HttpDelete("http://localhost:8080/sudoku/" + selectedDBIndex);
+            httpClient.execute(httpDelete);
             sudokuTable.getItems().remove(selectedIndex);
-            manager.deleteGameData(selectedDBIndex);
         } else {
             // 아무 sudoku 게임 기록도 선택하지 않은 경우)
             Alert alert = createAlert("warning", "오류", "선택된 기록이 없습니다.", "스도쿠 게임 기록을 선택해주세요.");
