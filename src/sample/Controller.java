@@ -189,7 +189,8 @@ public class Controller implements Initializable {
                 HttpPost httpPost = new HttpPost("http://localhost:8080/sudoku/");
                 httpPost.addHeader("accept", "application/json");
                 httpPost.addHeader("Content-Type", "application/json");
-                httpPost.setEntity(new StringEntity(json));
+                HttpEntity stringEntity = new StringEntity(json, "UTF-8");
+                httpPost.setEntity(stringEntity);
                 httpClient.execute(httpPost);
 
                 // TableView 갱신하기
