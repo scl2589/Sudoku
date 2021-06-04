@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sun.deploy.net.HttpRequest;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -18,21 +17,14 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
-import java.sql.SQLException;
-import java.sql.SQLOutput;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -65,14 +57,6 @@ public class Controller implements Initializable {
     private Date end_time;
     private StringBuilder sudokuAnswer;
     private SQLiteManager manager = new SQLiteManager();
-
-    HashSet<Integer>[] rows = new HashSet[9];
-    HashSet<Integer>[] cols = new HashSet[9];
-    HashSet<Integer>[] box = new HashSet[9];
-
-    HashSet<Integer>[] checkRows = new HashSet[9];
-    HashSet<Integer>[] checkCols = new HashSet[9];
-    HashSet<Integer>[] checkBox = new HashSet[9];
 
     private ObservableList<Sudoku> sudokuData = FXCollections.observableArrayList();
 
@@ -159,6 +143,7 @@ public class Controller implements Initializable {
             Boolean content = Boolean.parseBoolean(EntityUtils.toString(entity, "UTF-8"));
             if (content == true) { // 정답일 경우
                 // 타이머 중지
+
                 timeline.stop();
 
                 // 게임이 끝났으므로 게임 끝난 시각 저장
@@ -327,44 +312,6 @@ public class Controller implements Initializable {
     }
 
 
-    private List<Integer> getNumbers(ArrayList<Integer> list, int totalItems ) {
-        Random rand = new Random();
-        List<Integer> returnList = new ArrayList<>();
-        for (int i = 0; i < totalItems; i++) {
-            int randomIndex = rand.nextInt(list.size());
-            returnList.add(list.get(randomIndex));
-            list.remove(randomIndex);
-        }
-        return returnList;
-    }
-
-    private Boolean correct() {
-        for (int i = 0; i < 9; i++ ) {
-            checkRows[i] = new HashSet<>();
-            checkCols[i] = new HashSet<>();
-            checkBox[i] = new HashSet<>();
-        }
-
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                String text = arr.get(i).get(j).getText();
-                if ("".equals(text)) {
-                    return false;
-                }
-                Integer current = Integer.parseInt(arr.get(i).get(j).getText());
-                int ij = (i / 3) * 3 + j / 3;
-                if (checkRows[i].contains(current) || checkCols[j].contains(current) || checkBox[ij].contains(current)) {
-                    return false;
-                } else {
-                    checkRows[i].add(current);
-                    checkCols[j].add(current);
-                    checkBox[ij].add(current);
-                }
-            }
-        }
-        return true;
-    }
-
     private void setTextFieldStyle() {
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
@@ -458,12 +405,6 @@ public class Controller implements Initializable {
         }
 
         return alert;
-    }
-
-    // DB에 데이터 추가하는 메서드
-    private void insertData(String nickname, Date start_time, Date end_time, int spent_time, String answer, String problem) throws SQLException {
-        Object[] params = {nickname, start_time, end_time, spent_time, answer, problem};
-        manager.insertGameData(params);
     }
 
     private void initializeTable() throws Exception, JsonMappingException {
